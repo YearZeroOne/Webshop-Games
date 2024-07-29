@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "WrongEmailAddress";
+
+}
+
+
+
+
+@if (TempData["Message"] != null)
+{
+    <script type="text/javascript">
+        window.onload = function () {
+        @* Without "Html.Raw" German characters are not displayed correctly  *@
+                alert('@Html.Raw(TempData["Message"])');
+        };
+    </script>
+}
+
+
+<div class="container d-flex align-items-center justify-content-center">
+    <div class="col-lg-4">
+
+        <a href="~/Home/ForgotPasswordCustomer" class="btn btn-danger form-group" style="width: 100%;
+max-width:300px; margin-top:50px; margin-bottom:200px;">Zurück nur E-Mail-Adressen Eingabe</a>
+
+
+    </div>
+</div>
+
+

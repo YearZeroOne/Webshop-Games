@@ -1,0 +1,35 @@
+﻿@model WebShopLib.Models.Customer
+
+<div class="container">
+    <h2 class="mb-4">Persönliche Daten</h2>
+
+    @*the user's parameters are displayed and can be edited*@
+    <form asp-action="UpdatePersonalData" asp-controller="User" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="mb-3">
+            <label for="firstName" class="form-label">Vorname:</label>
+            <input type="text" class="form-control" id="firstName" name="firstName" value="@Model.FirstName" required>
+        </div>
+        <div class="mb-3">
+            <label for="lastName" class="form-label">Nachname:</label>
+            <input type="text" class="form-control" id="lastName" name="lastName" value="@Model.LastName" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email:</label>
+            <input type="email" class="form-control" id="email" name="email" value="@Model.Email" required>
+        </div>
+        <div class="mb-3">
+            <label for="gender" class="form-label">Geschlecht:</label>
+            <select asp-for="Gender" class="form-select" required>
+                <option value="1">Mann</option>
+                <option value="2">Frau</option>
+                <option value="3">Diverse</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Telefon:</label>
+            <input type="tel" class="form-control" id="phone" name="phone" value="@Model.Phone" required>
+        </div>
+        <input type="submit" value="Aktualisieren" class="btn btn-danger">
+    </form>
+</div>

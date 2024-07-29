@@ -1,0 +1,31 @@
+﻿<style>
+    .container {
+        height: 100%;
+        padding: 10%;
+    }
+
+</style>
+
+
+@*
+    https://getbootstrap.com/docs/4.0/components/forms/
+    https://stackoverflow.com/questions/40002198/how-to-center-div-with-col-md-6
+    https://stackoverflow.com/questions/69250686/how-to-centre-a-div-in-bootstrap-5
+*@
+
+
+    @*indication of successful registration*@
+    <div class="container d-flex align-items-center justify-content-center">
+        <div class="col-md-6">
+            <h4>Sie haben sich erfolgreich registriert!</h4>
+
+            <br />
+            <!-- simple link -->
+            <a href="~/User/Login" class="btn btn-danger  form-group" style="width: 100%">Zur Anmeldung</a>
+            <br />
+            <br />
+            <!-- simple link -->
+            <a href="~/Home/Index" class="btn btn-outline-danger textdark form-group" style="width: 100%">Zur Startseite</a>
+
+        </div>
+    </div>

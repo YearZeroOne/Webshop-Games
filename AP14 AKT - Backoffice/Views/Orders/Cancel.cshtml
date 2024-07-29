@@ -1,0 +1,20 @@
+﻿@model int
+@inject WebShopLib.Models.ApplicationDbContext _context
+@{
+    ViewData["Title"] = "Cancel";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string guid = Context.Request.Cookies["guid"];
+    var currentUser = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+}
+
+<h1>Please enter your password:</h1>
+
+<form asp-action="CancelProc" asp-controller="Orders" method="post">
+
+    <input type="password" name="password" class="form-control" />
+    <input type="hidden" name="orderId" value="@Model" />
+    <input type="hidden" name="userId" value="@currentUser.Id" />
+    <input type="submit" value="Submit" class="btn btn-danger" />
+
+</form>

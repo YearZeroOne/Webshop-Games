@@ -1,0 +1,61 @@
+﻿@using WebShopLib.Models;
+@model OrderOverviewViewModel
+    
+@* Create a container for the order details *@
+<div class="container">
+
+    @* Display a header for the order details *@
+    <h1 style="margin-top:2%; margin-bottom:2%">Bestelldetails</h1>
+
+    @* Add a button to download the order details as a PDF. This button triggers the downloadPDF() function when clicked. *@
+    <a href="#" class="btn btn-danger" onclick="downloadPDF()">Als PDF downloaden</a>
+
+    @* Display the order date, payment method, and total price of the order. Use the null-conditional operator to avoid NullReferenceExceptions. *@
+    <p>Bestelldatum: @Model.Order?.OrderDate</p>
+    <p>Zahlungsart: @Model.Order?.PaymentMethod.Name</p>
+    <p>Gesamtpreis: @Model.OrderAmount.ToString("F2")</p>
+
+
+    @* Include a partial view that displays a list of products in the order. Pass the Order from the OrderOverviewViewModel as the model for the partial view. *@
+    <partial name="_OrderProductList" model="@Model.Order" />
+
+    </div>
+
+
+
+
+@* Import the html2pdf.js library, which allows HTML content to be converted into a PDF *@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.js"></script>
+
+@* Define a function to download the contents of the container as a PDF *@
+<script>
+    function downloadPDF() {
+        const element = document.querySelector('.container');
+
+        // Create a deep clone of the element to exclude the button
+        let clonedElement = element.cloneNode(true);
+
+        // Remove the button from the cloned element
+        const button = clonedElement.querySelector('.btn-danger');
+        if (button) {
+            button.parentNode.removeChild(button);
+        }
+
+        const opt = {
+            margin: 0,
+            filename: 'order.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Use the clonedElement for the PDF
+        html2pdf().from(clonedElement).set(opt).save();
+    }
+</script>
+
+
+
+
+
+

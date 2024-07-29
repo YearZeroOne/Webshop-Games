@@ -1,0 +1,75 @@
+﻿@model int
+@inject WebShopLib.Models.ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "AddDelivery";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    //var notDeliveredProducts =
+    //(
+    //    from deliveries in _context.Deliveries
+    //    join products in _context.Products on deliveries.ProductId equals products.Id
+    //    where deliveries.ReOrderId == reOrderId && !deliveries.Completed
+    //    select new
+    //    {
+    //        Id = products.Id,
+    //        Name = products.Name,
+    //        Quantity = deliveries.Quantity,
+    //        Price = products.NetUnitPrice * deliveries.Quantity
+    //    }
+    //).ToList();
+
+    var products = _context.Products.Where(x => x.ProductCategoryId == 11 && x.IsActive).ToList();
+
+    string guid = Context.Request.Cookies["guid"];
+    var currentUser = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+}
+
+<h1>AddDelivery</h1>
+
+<h4>Delivery</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="AddDeliveryProc">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label name="ProductId" class="control-label"></label>
+                <select name="ProductId" class="form-control">
+                    @{
+                        foreach (var item in products)
+                        {
+                            <option class="form-control" value="@item.Id">@item.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group" hidden>
+                <input name="ReOrderId" value="@Model" class="form-control"></input>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Quantity</label>
+                <input name="Quantity" class="form-control" />
+            </div>
+            <div class="form-group" hidden>
+                    <input class="form-check-input" value="false" name="Completed" />
+            </div>
+            <div class="form-group" hidden>
+                    <input class="form-check-input" value="@currentUser.Id" name="creatorId" />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-danger" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

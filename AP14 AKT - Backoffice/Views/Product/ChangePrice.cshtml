@@ -1,0 +1,13 @@
+﻿
+@{
+    ViewData["Title"] = "ChangePrice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>ChangePrice</h1>
+
+<form asp-action="ChangePricePassword">
+    <input type="text" pattern="^\d*(\,\d{0,2})?$" name="newPrice" class="form-control" />
+    <input type="hidden" name="productId" value="@ViewBag.ProductId" />
+    <input type="submit" class="btn btn-danger" value="Submit" />
+</form>

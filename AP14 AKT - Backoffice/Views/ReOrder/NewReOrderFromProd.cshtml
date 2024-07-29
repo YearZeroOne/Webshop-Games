@@ -1,0 +1,63 @@
+﻿@using WebShopLib.Models;
+@model WebShopLib.Models.Product
+@inject WebShopLib.Models.ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "ReOrder for Product";
+    var reorder = _context.ReOrders.Where(p => p.Sent == false).ToList();
+    var currentUser = _context.Employees.Where(x => x.Guid == Context.Request.Cookies["guid"]).FirstOrDefault();
+}
+
+<h1>Choose reorder</h1>
+
+<a href="/ReOrder/NewReOrderWithProd?productId=@Model.Id&userId=@currentUser.Id" style="margin-left:12px;">
+    New ReOrder
+</a>
+
+<div class="container">
+    <table class="table" style="word-break:break-all;">
+        <thead>
+            <tr>
+                <th>
+                    Creator
+                </th>
+                <th>
+                    ReOrderNumber
+                </th>
+                <th>
+                    OrderDate
+                </th>
+                <th>
+                    Status
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in reorder)
+            {
+                var emp = _context.Employees.Find(item.CreatorId);
+                <tr>
+                    <td>
+                        @emp.FirstName @emp.LastName
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReOrderNumber)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.OrderDate)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Status)
+                    </td>
+
+                    <td>
+                        <a href="/ReOrder/AddProdToReOrder?reOrderId=@item.Id&productId=@Model.Id" style="margin-left:12px;">
+                            Add
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

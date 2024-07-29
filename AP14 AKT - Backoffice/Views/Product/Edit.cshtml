@@ -1,0 +1,232 @@
+﻿@model WebShopLib.Models.Product
+@inject WebShopLib.Models.ApplicationDbContext _context;
+
+@{
+	ViewData["Title"] = "Edit";
+
+	var allGenre = _context.Genres.ToList();
+	var allDevs = _context.Developers.ToList();
+
+    var priceHistory = _context.PriceHistories.Where(x => x.ProductId == Model.Id).ToList();
+
+    var taxRate = _context.ProductCategories.Where(x => x.Id == Model.ProductCategoryId).FirstOrDefault().TaxRate;
+
+	string guid = Context.Request.Cookies["guid"];
+	var currentUser = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+}
+
+<h1>Edit</h1>
+
+<h4>Product</h4>
+@if (Model.ProductCategoryId == 11)
+{
+	<a href="/ReOrder/NewReOrderFromProd?id=@Model.Id&userId=@currentUser.Id" style="margin-left:12px;">
+		ReOrder
+	</a>
+}
+<hr />
+<div class="row">
+	<div class="col-md-5">
+		<form asp-action="EditProc" method="post" enctype="multipart/form-data">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<input type="hidden" asp-for="Id" />
+			<div class="form-group">
+				<label asp-for="Name" class="control-label"></label>
+				<input asp-for="Name" class="form-control" />
+				<span asp-validation-for="Name" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="ProductNumber" class="control-label"></label>
+				<input asp-for="ProductNumber" class="form-control" />
+				<span asp-validation-for="ProductNumber" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+
+						<input asp-for="Developer.Id" id="dev-name" class="form-control" hidden />
+			</div>
+
+			<div class="form-group">
+				<label class="control-label">New Developer</label>
+				<select class="form-control" name="DeveloperId" id="dev-list">
+					@foreach (var item in allDevs)
+					{
+						if (item.IsActive == true)
+						{
+							<option  value="@item.Id">@item.Name</option>
+						}
+					}
+				</select>
+				<span asp-validation-for="Developer" class="text-danger"></span>
+			</div>
+			@* <div class="form-group" hidden>
+			<label asp-for="ProductCategoryId" class="control-label"></label>
+			<select asp-for="ProductCategoryId" class="form-control" asp-items="ViewBag.ProductCategoryId"></select>
+			<span asp-validation-for="ProductCategoryId" class="text-danger"></span>
+			</div>*@
+			<div class="form-group">
+				<label asp-for="ProductCategory"></label>
+				<select name="ProductCategoryId" class="form-control">
+					<option value="11">Physical</option>
+					<option value="12">Digital</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label asp-for="NetUnitPrice" class="control-label"></label>
+				<input name="netUnitPrice" step=any class="form-control" value="@Model.NetUnitPrice" id="netPrice" disabled />
+				<span asp-validation-for="NetUnitPrice" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Stock" class="control-label"></label>
+				@if (currentUser.Role == 3)
+				{
+					<input asp-for="Stock" class="form-control" disabled/>
+				}
+				else
+				{
+					<input asp-for="Stock" class="form-control"/>
+				}
+				<span asp-validation-for="Stock" class="text-danger"></span>
+			</div>
+			<div class="form-group form-check">
+				<label class="form-check-label">
+					<input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+				</label>
+			</div>
+			<div class="form-group">
+
+				<input asp-for="Genre.Id" id="gen-Name" class="form-control" hidden />
+			</div>
+
+			<div class="form-group">
+				<label class="control-label">New Genre</label>
+				<select class="form-control" name="GenreId" id="genre-list">
+					@foreach (var item in allGenre)
+					{
+						if (item.IsActive == true)
+						{
+							<option value="@item.Id">@item.Name</option>
+						}
+					}
+				</select>
+				<span asp-validation-for="GenreId" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Description" class="control-label"></label>
+				<textarea asp-for="Description" class="form-control"></textarea>
+				<span asp-validation-for="Description" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<div class="custom-file-upload">
+
+					<input type="file" id="file" name="productPicture" asp-for="Images" />
+
+                    <input type="checkbox" name="isPrimary" value="true"/><p>Primary</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-7">
+        <table>
+            <tr>
+                <th>
+                    <h4>Current Net Price</h4>
+                </th>
+                <th>
+                    <h4>Current Gross Price</h4>
+                </th>
+                <th>
+                    <h4>Tax Rate</h4>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <h4>@Html.Raw(Math.Round(Model.NetUnitPrice,2)) €</h4>
+                </th>
+                <th>
+                    <h4>@Html.Raw(Math.Round(Model.NetUnitPrice * (1+(taxRate/100)),2)) €</h4>
+                </th>
+                <th>
+                    <h4>@taxRate %</h4>
+                </th>
+            </tr>
+            <tr>
+            </tr>
+        </table>
+
+        <table class="table">
+            <tr>
+                <th>
+                    New Price
+                </th>
+                <th>
+                    Set By
+                </th>
+                <th>
+                    Set On
+                </th>
+            </tr>
+            @foreach (var item in priceHistory)
+            {
+                var employee = _context.Employees.Find(item.SetBy);
+
+                <tr>
+                    <td>
+                        @item.Price
+                    </td>
+                    <td>
+                        @employee.FirstName @employee.LastName
+                    </td>
+                    <td>
+                        @item.SetOn.ToShortDateString()
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<div>
+	<a asp-action="Index" asp-controller="product">Back to List</a>
+</div>
+
+
+
+<script>
+
+
+
+	var devNameInput = document.getElementById("dev-name");
+	var devList = document.getElementById("dev-list");
+
+	for (var i = 0; i < devList.options.length; i++) {
+		if (devList.options[i].value == devNameInput.value) {
+			devList.options[i].selected = true;
+			break;
+		}
+	};
+
+	var genreNameInput = document.getElementById("gen-Name");
+	var genreList = document.getElementById("genre-list");
+	for (var i = 0; i < genreList.options.length; i++) {
+		if (genreList.options[i].value == genreNameInput.value) {
+			genreList.options[i].selected = true;
+			break;
+		}
+	};
+
+	let netPriceInput = document.getElementById("netPrice");
+	let netPriceValue = netPriceInput.value.replace(/\./g, ",");
+	netPriceInput.value = netPriceValue;
+
+
+
+</script>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}

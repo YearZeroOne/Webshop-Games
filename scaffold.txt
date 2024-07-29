@@ -1,0 +1,1 @@
+scaffold-DbContext -connection "Data Source=DESKTOP-NSNNNML\SQLEXPRESS;Initial Catalog=Webshop;Persist Security Info=True;User ID=sa;Password=Admin2019$; TrustServerCertificate=True;" -provider Microsoft.EntityFrameworkCore.SqlServer -outputDir Models -context ApplicationDbContext -dataAnnotations -force

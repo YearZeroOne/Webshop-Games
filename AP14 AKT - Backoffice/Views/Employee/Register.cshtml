@@ -1,0 +1,21 @@
+﻿
+
+
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Register</h1>
+
+<form method="post" asp-controller="Employee" asp-action="RegisterProc">
+
+	<input type="text" name="guid" value="@TempData["guid"]"  hidden />
+	
+	<input type="password" name="password" placeholder="password" required />
+
+	<button>
+		<span>Register</span>
+	</button>
+</form>
+

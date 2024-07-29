@@ -1,0 +1,76 @@
+﻿@using WebShopLib.Models;
+@model WebShopLib.Models.ReOrder
+@inject WebShopLib.Models.ApplicationDbContext _context
+@using Microsoft.EntityFrameworkCore
+
+@{
+    ViewData["Title"] = "Delivered";
+
+    var guid = Context.Request.Cookies["guid"];
+    var reOrder = _context.ReOrders.Find(Model.Id);
+    var creator = _context.Employees.Where(p => p.Id == Model.CreatorId).ToList();
+    var currentUser = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+
+    //var product = (from deli in _context.Deliveries
+    //               join reorders in _context.ReOrders on deli.ReOrderId equals reorders.Id
+    //               join products in _context.Products on deli.ProductId equals products.Id
+    //               where deli.ReOrderId == Model.Id && !deli.Completed && reorders.Sent
+    //               select new
+    //               {
+    //                   Id = products.Id,
+    //                   Name = products.Name,
+    //                   Delivery = deli,
+    //                   Price = products.NetUnitPrice * deli.Quantity
+    //               }).ToList();
+
+    var deliveries = _context.Deliveries.Include(x => x.Product).ThenInclude(x=>x.ProductCategory).Where(x => x.ReOrderId == Model.Id && x.Completed == false).ToList();
+
+}
+
+<h1>Select delivery</h1>
+
+<p>
+    <a href="/ReOrder/Index">Back to List</a>
+</p>
+
+<div class="row">
+    <table class="table table-hover">
+        <h3>ReOrder</h3>
+        <tr>
+            <th>Number</th>
+            <th>Creator</th>
+        </tr>
+
+        <tr>
+            <td>@reOrder.ReOrderNumber</td>
+            <td>
+                @foreach (var item in creator)
+                {
+                    @item.FirstName @Html.Raw("&nbsp;") @item.LastName
+                }
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="row">
+    <table class="table table-hover">
+        <h3>Deliveries</h3>
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th></th>
+        </tr>
+        @foreach (var item in deliveries)
+        {
+            <tr>
+                <td hidden>@item.Id</td>
+                <td>@item.Product.Name</td>
+                <td>@item.Quantity</td>
+                <td>@Math.Round((item.Product.NetUnitPrice *(1+item.Product.ProductCategory.TaxRate)), 2)<span> €</span></td>
+                <td><a href="/ReOrder/ReOrderDeliveredProc?deliveryId=@item.Id&userId=@currentUser.Id&stock=@item.Quantity">Delivered</a></td>
+            </tr>
+        }
+    </table>
+</div>

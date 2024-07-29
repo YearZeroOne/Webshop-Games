@@ -1,0 +1,452 @@
+﻿@inject WebShopLib.Models.ApplicationDbContext _context
+@model IEnumerable<WebShopLib.Models.CartItem>
+@using WebShopLib.Models;
+
+
+@{
+    ViewData["Title"] = "Index";
+
+
+
+}
+
+@{
+
+    decimal totalPrice = 0;
+}
+<style>
+
+
+
+</style>
+<br />
+<div class="container">
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-12 col-xl-10">
+
+            <h1>Warenkorb 🛒</h1>
+            <hr />
+            @if (TempData["CartFlag"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    @TempData["CartFlag"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        
+
+            @foreach (var key in TempData.Keys)
+{
+    if (key.StartsWith("PriceFlag_"))
+    {
+        @if (TempData[key] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    @TempData[key]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    }
+    else if (key.StartsWith("StockFlag_"))
+    {
+        @if (TempData[key] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    @TempData[key]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                
+            </div>
+        }
+    }
+    else if (key.StartsWith("IsActiveFlag_"))
+    {
+        @if (TempData[key] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    @TempData[key]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    }
+    else if (key.StartsWith("StockZeroFlag_"))
+    {
+        @if (TempData[key] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    @TempData[key]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    }
+}
+
+
+        
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@if (!Model.Any())
+{
+
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+                <h4>Es konnten keine Produkte gefunden werden.</h4>
+
+            </div>
+
+        </div>
+
+
+
+
+    </div>
+
+
+    <br />
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <hr />
+            </div>
+
+        </div>
+
+    </div>
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <div class="float-end">
+                    <p class="mb-0 me-5 d-flex align-items-center">
+                        <span class="mediumtext-muted me-2">Gesamtpreis:</span> <h1>@Model.Sum(ci => ci.Quantity * ci.Product.NetUnitPrice) €</h1>
+                    </p>
+
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <hr />
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <div class="d-flex justify-content-end">
+
+                    <a href="~/Product/Index" class="btn btn-outline-danger btn-lg me-2">Einkauf fortzsetzen</a>
+                    <button type="submit" class="btn btn-danger btn-lg">Zur Kasse</button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+}
+
+
+
+else
+{
+     
+    @foreach (var cartItem in Model)
+    {
+
+
+        <div class="container" data-aos="flip-left">
+            <div class="row justify-content-center mb-3">
+                <div class="col-md-12 col-xl-10">
+                    <div class="card shadow-0 border rounded-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 col-lg-3 col-xl-3 mb-4 mb-lg-0">
+                                    <div>
+
+
+                                        @if (cartItem.Product.Images.Any())
+                                        {
+                                            var primaryImage = cartItem.Product.Images.Where(i => i.IsPrimaryPic).FirstOrDefault();
+                                            if (primaryImage != null)
+                                            {
+                                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(primaryImage.Picture)" class="w-100" />
+
+                                            }
+                                        }
+
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6 col-xl-6">
+                                    <h6>@cartItem.Product.ProductNumber</h6>
+                                    <h5>@cartItem.Product.Name</h5>
+                                    <p>
+                                        @if (cartItem.Product.ProductCategory.Name == "Digital")
+                                        {
+                                            <span>digtal</span>
+
+
+                                        }
+                                        else
+                                        {
+                                            <span>physisch</span>
+                                        }
+                                    </p>
+                                  
+                                    <div class="d-flex ">
+                                        <table>
+                                            <form asp-action="UpdateCart" onsubmit="submitForm(event)">
+
+                                            <tr>
+                                                <td>
+                                                    <h6 style="margin-top: 5px;" class="mb-1 me-1">
+                                                        <input type="text" disabled style="border: none; color: black; font-weight: 500; padding-right: 20px; background-color: transparent; width: auto;" id="price-@cartItem.Id" size="3" value="@(string.Format("{0:0.00}", cartItem.Product.NetUnitPrice * (1+ cartItem.Product.ProductCategory.TaxRate / 100))) €" />
+                                                    </h6>
+                                                </td>
+
+                                                <td class="align-middle border-bottom-0">
+                                                    <div class="d-flex flex-row">
+                                                        <button class="btn btn-link px-2" onclick="decrementValue('@cartItem.Id')">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="color: red;" class="bi bi-dash" viewBox="0 0 16 16">
+                                                                <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
+                                                            </svg>
+                                                        </button>
+
+                                                        <input type="hidden" name="guid" value="@Context.Request.Cookies["guid"]" />
+
+                                                        <input type="hidden" name="id" value="@cartItem.Id" />
+                                                        <input type="hidden" name="netprice" value="@cartItem.Price"/>
+                                                        <input type="number" min="1" name="quantity" id="multiplier-@cartItem.Id" value="@cartItem.Quantity" oninput="updateValue('@cartItem.Id')" onblur="if(this.value==='') this.value='@cartItem.Quantity'" onchange="this.form.submit()" class="form-control form-control-sm" style="width: 50px;" required />
+
+
+
+                                                        <button class="btn btn-link px-2" onclick="incrementValue('@cartItem.Id')">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="color: red;" class="bi bi-plus" viewBox="0 0 16 16">
+                                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <h6 style="margin-top: 5px; margin-left:30px;" class="mb-1 me-1">
+                                                        <input type="text" disabled style="border: none; color: black; font-weight: 500; padding-right: 20px; background-color: transparent;" id="number-@cartItem.Id" value="@(string.Format("{0:0.00}", cartItem.Quantity *( cartItem.Product.NetUnitPrice * (1+ cartItem.Product.ProductCategory.TaxRate / 100)))) €" />
+                                                    </h6>
+                                                </td>
+                                            </tr>
+                                                @{
+
+                                                    totalPrice += (cartItem.Quantity * (cartItem.Product.NetUnitPrice * (1 + cartItem.Product.ProductCategory.TaxRate / 100)));
+
+                                                }
+                                            </form>
+                                        </table>
+                                    </div>
+
+
+                                </div>
+
+                                <script>
+                                    function submitForm(event) {
+                                        event.preventDefault(); // prevent the form from submitting immediately
+                                        setTimeout(() => {
+                                            event.target.submit(); // submit the form after 1 second
+                                        }, 1000);
+                                    }
+                                </script>
+
+
+                                <script>
+                                    // Function to decrement the value of an item
+                                    function decrementValue(itemId) {
+                                        // Retrieve the current value, multiplier, and price of the item
+                                        let value1 = parseFloat(document.getElementById('number-' + itemId).value);
+                                        let multiplier = parseInt(document.getElementById('multiplier-' + itemId).value);
+                                        let value2 = parseFloat(document.getElementById('price-' + itemId).value);
+
+                                        // Check if the multiplier is greater than 1
+                                        if (multiplier > 1) {
+                                            // Decrement the multiplier and subtract the price from the value
+                                            multiplier--;
+                                            value1 -= value2;
+
+                                            // Update the displayed value and multiplier
+                                            document.getElementById('number-' + itemId).value = value1.toFixed(2).replace('.', ',') + " €";
+                                            document.getElementById('multiplier-' + itemId).value = multiplier;
+                                        }
+                                    }
+
+                                    // Function to increment the value of an item
+                                    function incrementValue(itemId) {
+                                        // Retrieve the current value, multiplier, and price of the item
+                                        let value1 = parseFloat(document.getElementById('number-' + itemId).value);
+                                        let multiplier = parseInt(document.getElementById('multiplier-' + itemId).value);
+                                        let value2 = parseFloat(document.getElementById('price-' + itemId).value);
+
+                                        // Check if the multiplier is less than the maximum stock
+                                        if (multiplier < @cartItem.Product.Stock) {
+                                            // Increment the multiplier and add the price to the value
+                                            multiplier++;
+                                            value1 += value2;
+                                        } else {
+                                            // If the multiplier reaches the maximum stock, set it to the maximum stock value
+                                            multiplier = @cartItem.Product.Stock;
+                                        }
+
+                                        // Update the displayed value and multiplier
+                                        document.getElementById('number-' + itemId).value = value1.toFixed(2).replace('.', ',') + " €";
+                                        document.getElementById('multiplier-' + itemId).value = multiplier;
+                                    }
+
+                                    // Function to update the value of an item
+                                    function updateValue(itemId) {
+                                        // Retrieve the current multiplier, price, and calculate the new value
+                                        let multiplier = parseInt(document.getElementById('multiplier-' + itemId).value);
+                                        let value2 = parseFloat(document.getElementById('price-' + itemId).value);
+                                        let value1 = multiplier * value2;
+
+                                        // Check if the multiplier exceeds 99
+                                        if (multiplier > 99) {
+                                            // Set the multiplier to 99 and calculate the corresponding value
+                                            multiplier = 99;
+                                            value1 = 99 * value2;
+                                            document.getElementById('multiplier-' + itemId).value = multiplier;
+                                        }
+
+                                        // Update the displayed value
+                                        document.getElementById('number-' + itemId).value = value1.toFixed(2).replace('.', ',') + " €";
+                                    }
+                                </script>
+
+
+
+
+
+
+                                <div class="col-md-6 col-lg-3 col-xl-3">
+                                    <div class="d-flex flex-row align-items-center mb-1">
+
+                                        <div></div>
+                                    </div>
+                                    <div class="d-flex flex-column mt-4">
+
+
+                                        @Html.ActionLink("Details", "Details", "Product", new { id = cartItem.Product.Id }, new { @class = "btn btn-outline-danger btn-sm mt-2" })
+
+                                        <form asp-action="RemoveItem" class="d-flex flex-column">
+                                            <input type="hidden" name="guid" value="@Context.Request.Cookies["guid"]" />
+
+                                            <input type="hidden" name="id" value="@cartItem.Id" />
+                                            <button class="btn btn-danger btn-sm mt-2 " type="submit">
+                                                Entfernen
+                                            </button>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+
+    <br />
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <hr />
+            </div>
+
+        </div>
+
+    </div>
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <div class="float-end">
+                    <p class="mb-0 me-5 d-flex align-items-center">
+@*                        <span class="mediumtext-muted me-2">Gesamtpreis:</span> <h1>@Model.Sum(ci => ci.Quantity * ci.Product.NetUnitPrice ) €</h1>
+*@                        <span class="mediumtext-muted me-2">Gesamtpreis:</span> <h1>@totalPrice.ToString("0.00") €</h1>
+
+                    </p>
+
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <hr />
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+
+                <div class="d-flex justify-content-end">
+                    <form asp-action="ProceedPayment" method="post">
+
+                         <input type="hidden" name="guid" value="@Context.Request.Cookies["guid"]" />
+                        <input type="hidden" name="id" value="@Model.FirstOrDefault()?.ShoppingCartId" />
+
+
+
+
+
+
+
+                    <a href="~/Product/Index" class="btn btn-outline-danger btn-lg me-2">Einkauf fortzsetzen</a>
+                    <button type="submit" class="btn btn-danger btn-lg">Zur Kasse</button>
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+}
+
+
+
+
+
+
+
+

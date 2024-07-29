@@ -1,0 +1,222 @@
+﻿@model WebShopLib.Models.ReOrder
+@inject WebShopLib.Models.ApplicationDbContext _context
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+
+    var allProduct = from prod in _context.Products
+                     join pCat in _context.ProductCategories on prod.ProductCategoryId equals pCat.Id
+                     where prod.IsActive && pCat.Name == "Physical"
+                     select new
+                     {
+                         Id = prod.Id,
+                         Name = prod.Name,
+                         Stock = prod.Stock,
+
+                     };
+
+    var notDeliveredProducts =
+        (
+        from deli in _context.Deliveries
+        join products in _context.Products on deli.ProductId equals products.Id
+        where deli.ReOrderId == Model.Id && !deli.Completed
+        select new
+        {
+            Id = products.Id,
+            Name = products.Name,
+            Number = deli.DeliveryNumber,
+            Quantity = deli.Quantity,
+            Price = products.NetUnitPrice * deli.Quantity
+        }
+        ).ToList();
+
+    var deliveredProducts =
+    (
+        from deli in _context.Deliveries
+        join products in _context.Products on deli.ProductId equals products.Id
+        where deli.ReOrderId == Model.Id && Model.Status == WebShopLib.Models.ReOrderStatus.PartiallyFulfilled || deli.ReOrderId == Model.Id && Model.Status == WebShopLib.Models.ReOrderStatus.Complete
+        select new
+        {
+            Id = products.Id,
+            Name = products.Name,
+            Number = deli.DeliveryNumber,
+            Quantity = deli.Quantity,
+            Date = deli.DeliveryDate,
+            EmployeeFirstName = deli.Reciever.FirstName,
+            EmployeeLastName = deli.Reciever.LastName,
+            Price = products.NetUnitPrice * deli.Quantity
+        }
+    ).ToList();
+
+    var filteredDelivProd = deliveredProducts.Where(p => p.Date != null);
+}
+
+<h1>Edit</h1>
+
+<h4>ReOrder</h4>
+<hr />
+<div class="row">
+    <div class="col-md-5">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" id="reOrderId" asp-for="Id" />
+            <div class="form-group" hidden>
+                <label asp-for="CreatorId" class="control-label"></label>
+                <select asp-for="CreatorId" class="form-control" asp-items="ViewBag.CreatorId"></select>
+                <span asp-validation-for="CreatorId" class="text-danger"></span>
+            </div>
+            <th>Status: </th>
+            <td>@Html.Raw(Model.Status)</td>
+            <div class="form-group">
+                <label asp-for="OrderDate" class="control-label"></label>
+                <input asp-for="OrderDate" class="form-control" />
+                <span asp-validation-for="OrderDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReOrderNumber" class="control-label"></label>
+                <input asp-for="ReOrderNumber" class="form-control" />
+                <span asp-validation-for="ReOrderNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Sent" /> @Html.DisplayNameFor(model => model.Sent)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastStatusChange" class="control-label"></label>
+                <input asp-for="LastStatusChange" class="form-control" />
+                <span asp-validation-for="LastStatusChange" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastEditorId" class="control-label"></label>
+                <select asp-for="LastEditorId" class="form-control" asp-items="ViewBag.LastEditorId"></select>
+                <span asp-validation-for="LastEditorId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+
+    <div class="col-md-7">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Stock
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in allProduct)
+                {
+                    <tr>
+                        <td>
+                            @item.Name
+                        </td>
+                        <td>
+                            @item.Stock
+                        </td>
+                        <td>
+
+
+                            @if (!Model.Sent)
+                            {
+                                <form asp-controller="ReOrder" asp-action="AddProdToReOrderProc" method="post">
+
+
+
+                                    <div class="d-flex flex-row">
+
+                                        <input type="hidden" name="productId" value="@item.Id" />
+                                        <input type="number" min="0" class="form-control form-control-sm" style="width: 50px;" name="quantity" />
+                                        <input type="hidden" name="userId" value="userId" />
+                                        <button type="submit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
+                                                <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z" />
+                                            </svg>
+                                        </button>
+
+
+                                    </div>
+                                    <input type="hidden" value="@Model.Id" name="reOrderId" />
+
+
+
+                                </form>
+                            }
+
+
+                        </td>
+
+
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h4>Ordered</h4>
+<div class="row">
+    <table class="table table-hover">
+        <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        @{
+            foreach (var item in notDeliveredProducts)
+            {
+                <tr>
+                    <td hidden>@item.Id</td>
+                    <td>@item.Number</td>
+                    <td>@item.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@Math.Round(item.Price, 2)<span> €</span></td>
+                </tr>
+            }
+        }
+    </table>
+</div>
+
+<h4>Delivered</h4>
+<div class="row">
+    <table class="table table-hover">
+        <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Employee</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        @{
+            foreach (var item in filteredDelivProd)
+            {
+                <tr>
+                    <td hidden>@item.Id</td>
+                    <td>@item.Number</td>
+                    <td>@item.Name</td>
+                    <td>@item.Date</td>
+                    <td>@item.EmployeeFirstName @item.EmployeeLastName</td>
+                    <td>@item.Quantity</td>
+                    <td>@Math.Round(item.Price, 2)<span> €</span></td>
+                </tr>
+            }
+        }
+    </table>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+

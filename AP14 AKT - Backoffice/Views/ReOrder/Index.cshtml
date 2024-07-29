@@ -1,0 +1,247 @@
+﻿@using WebShopLib.Models;
+@model IEnumerable<WebShopLib.Models.ReOrder>
+@inject WebShopLib.Models.ApplicationDbContext _context
+@using Microsoft.EntityFrameworkCore
+
+@{
+    ViewData["Title"] = "Index";
+
+    var guid = Context.Request.Cookies["guid"];
+    var user = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+    int creatorId = user.Id;
+    var deliv = _context.Deliveries.Where(x => x.ReOrderId == Model.FirstOrDefault().Id).FirstOrDefault();
+    var deliveryId = deliv.Id;
+
+    if (TempData["NewReOrder"] != null)
+    {
+        @Html.Raw(TempData["NewReOrder"])
+    }
+}
+
+<h1>Index</h1>
+
+<p>
+    @if (user.Role < 3)
+    {
+        <a asp-action="NewReOrderProc" asp-route-id="@creatorId">Create New</a>
+    }
+</p>
+
+<script>
+
+    //Get the button
+    let mybutton = document.getElementById("btn-back-to-top");
+
+    // When the user scrolls down 20px from the top of the document, show the button
+    window.onscroll = function () {
+        scrollFunction();
+    };
+
+    function scrollFunction() {
+        if (
+            document.body.scrollTop > 20 ||
+            document.documentElement.scrollTop > 20
+        ) {
+            mybutton.style.display = "block";
+        } else {
+            mybutton.style.display = "none";
+        }
+    }
+    // When the user clicks on the button, scroll to the top of the document
+    mybutton.addEventListener("click", backToTop);
+
+    function backToTop() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
+</script>
+
+<div class="container">
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-12 col-xl-10">
+            <table>
+                <tr>
+                    <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#filter-sidebar" aria-controls="filter-sidebar" style="z-index: 1050;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+                            <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+                        </svg>Filter
+                    </button>
+                    <td>
+                        <form method="get" asp-action="Index">
+                            <table>
+                                <tr>
+                                    <td><button class="btn btn-danger" type="submit">Reset</button></td>
+                                </tr>
+                            </table>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="filter-sidebar" aria-labelledby="filter-sidebar-label" style="z-index: 1049;">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="filter-sidebar-label">Filter</h5>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+
+                    <form id="filter-form" method="get" asp-action="Filter">
+                        <h5>Status</h5>
+                        <input type="checkbox" name="status" value="0">
+                        <label for="status">Created</label><br>
+                        <input type="checkbox" name="status" value="1">
+                        <label for="status">Sent</label><br>
+                        <input type="checkbox" name="status" value="2">
+                        <label for="status">Partially Fulfilled</label><br>
+                        <input type="checkbox" name="status" value="3">
+                        <label for="status">Complete</label><br><br>
+
+                        <button type="submit" class="btn btn-danger">Filtern</button>
+                    </form>
+                    <br />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ReOrderNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OrderDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastStatusChange)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Creator)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastEditor)
+            </th>
+            <th>
+                Quantity all Products
+            </th>
+            <th>
+                Quantity per product
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var deliveries = _context.Deliveries.Where(x => x.ReOrderId == item.Id).ToList();
+
+            List<Product> products = new List<Product>();
+            decimal sumPrice = 0;
+            foreach (var delivery in deliveries)
+            {
+                products.AddRange(_context.Products.Where(x => x.Id == delivery.ProductId).ToList());
+
+                sumPrice += products.Where(x => x.Id == delivery.ProductId).Sum(x => x.NetUnitPrice) * delivery.Quantity;
+            }
+
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReOrderNumber)
+                </td>
+                <td>
+                    @Html.Raw(item.OrderDate.ToShortDateString())
+                </td>
+                <td>
+                    @Html.Raw(item.LastStatusChange.ToShortDateString())
+                </td>
+                <td>
+                    @{
+                        var creator = _context.Employees.Where(x => x.Id == item.CreatorId).FirstOrDefault();
+                        @Html.Raw(creator.FirstName + " " + creator.LastName)
+                    }
+                </td>
+                <td>
+                    @_context.Employees.Where(x => x.Id == item.CreatorId).FirstOrDefault()?.BusinessEmail
+                </td>
+                <td>
+                    @{
+                        var deliveryList = _context.Deliveries.Where(x => x.ReOrderId == item.Id).ToList();
+                        int deliveryCount = deliveryList.Sum(P => P.Quantity);
+
+                        if (deliveryCount == null)
+                        {
+                            <div>0</div>
+                        }
+                        else
+                        {
+                            <div>@deliveryCount</div>
+                        }
+                    }
+                </td>
+                <td>
+                    @{
+                        if (products.Count != 0)
+                        {
+                            var penis = _context.Deliveries.Where(x => x.ReOrderId == item.Id).Include(x=>x.Product).ToList();
+
+                            <select class="form-control">
+                                @foreach (var prod in penis)
+                                {
+                                    <option>@prod.Product.Name: @Html.Raw(prod.Quantity)</option>
+                                }
+                            </select>
+                        }
+                    }
+                </td>
+                <td>
+                    @Html.Raw(sumPrice)
+                </td>
+                <td>
+                    @item.Status
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                        </svg>
+                    </a>
+                    <a>&#x20;</a>
+                    <a asp-action="Details" asp-route-id="@item.Id">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                        </svg>
+                    </a>
+                    <a>&#x20;</a>
+                    @if (item.Status == ReOrderStatus.Created && deliveryCount != 0)
+                    {
+                        <a asp-action="ReOrderSurrender" asp-route-id="@item.Id" asp-route-userid="@user.Id">
+                            Send
+                        </a>
+                    }
+                    @if (item.Status == ReOrderStatus.PartiallyFulfilled || item.Status == ReOrderStatus.Sent)
+                    {
+                        <a href="/ReOrder/ReOrderDelivered?reOrderId=@item.Id">
+                            Delivered
+                        </a>
+                    }
+                    @if (item.Status == ReOrderStatus.Created)
+                    {
+                        <a asp-action="AddDelivery" asp-route-id="@item.Id">
+                            AddDelivery
+                        </a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

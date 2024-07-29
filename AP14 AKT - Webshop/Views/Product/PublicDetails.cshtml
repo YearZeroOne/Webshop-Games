@@ -1,0 +1,244 @@
+﻿@using WebShopLib.Models;
+@model WebShopLib.Models.Product
+
+
+
+@{
+    ViewData["Title"] = "PublicDetails";
+}
+
+
+
+
+<style>
+
+
+    .left-side-product-box img {
+        width: 100%;
+    }
+
+    .left-side-product-box .sub-img img {
+        margin-top: 5px;
+        width: 83px;
+        height: 100px;
+    }
+
+    p {
+        margin: 0;
+    }
+
+    @@media (min-width:360px) and (max-width:640px) {
+        .pro-box-section .pro-box img {
+            height: auto;
+        }
+    }
+
+</style>
+
+<br />
+<!-- Modal -->
+<div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="ModalLabel">Nur für angemeldete Benutzer verfügbar</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Schließen</button>
+                <form method="get" asp-action="Login" asp-controller="User">
+
+                    <button type="submit" class="btn btn-danger">Einloggen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="container">
+
+    <div class="row m-0">
+        <div>
+            <a asp-action="PublicIndex" class="btn btn-danger">Zurück</a>
+        </div>
+        <br />
+        <br />
+        <div class="col-lg-4 left-side-product-box pb-3">
+
+
+            @if (Model.Images.Any())
+            {
+                var primaryImage = Model.Images.FirstOrDefault(i => i.IsPrimaryPic);
+                if (primaryImage != null)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(primaryImage.Picture)" class="w-100" data-aos="zoom-in" />
+                }
+
+
+              
+            }
+        <div class="sub-img">
+
+            @if (Model.Images.Any())
+            {
+                
+
+                  foreach (var image in Model.Images.Where(i => !i.IsPrimaryPic))
+                {
+                    <a data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img-src="data:image/jpeg;base64,@Convert.ToBase64String(image.Picture)">
+                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(image.Picture)" class="border" style="object-fit: contain; max-width: 100%; max-height: 100%;" data-aos="zoom-in">
+                    </a>
+                }
+
+
+            }
+            </div>
+
+
+
+
+            <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <img src="" class="img-fluid" id="lightboxImage">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8" data-aos="zoom-in">
+            <div class=" p-3 m-0">
+                <div class="row">
+                    <div class="col-lg-12">
+
+                        <h1>
+                            @Html.DisplayFor(model => model.Name)
+                        </h1>
+                    </div>
+                    <div class="col-lg-12">
+                        <h1>
+                            @(string.Format("{0:0.00}", Model.NetUnitPrice * (1 + Model.ProductCategory.TaxRate / 100))) €
+                        </h1>
+                        <p>
+
+                            @if (Model.IsActive == false)
+
+                            {
+
+                                <span>⭕ inaktiv</span>
+
+
+
+                            }
+
+
+
+                            else
+                            {
+
+                                @if (Model.Stock >= 10)
+                                {
+                                    <span style="color: green">&#x1F7E2; verfügbar</span>
+                                }
+
+                                else if (Model.Stock < 10 && Model.Stock > 0)
+                                {
+                                    <span style="color: orange">&#x1F7E0; wenig verfügbar</span>
+
+                                }
+
+                                else if (Model.Stock == 0)
+                                {
+                                    <span style="color: red">&#x1F534; nicht verfügbar</span>
+                                }
+
+
+                            }
+                        </p>
+                        <br />
+
+
+
+                        @if (Model != null)
+                        {
+                            if (Model.ProductCategory.Name == "Digital")
+                            {
+                                <span style="font-weight: bold;">Produkart:</span> <span>digital</span>
+                            }
+                            else
+                            {
+                                <span style="font-weight: bold;">Produktart:</span> <span>physisch</span>
+
+                            }
+                        }
+
+
+
+
+                        <p><b>ProduktNr: </b>@Html.DisplayFor(model => model.ProductNumber)</p>
+                        <p><b>Kategorie: </b>@Html.DisplayFor(model => model.Genre.Name)</p>
+
+
+
+
+
+
+                        <p>
+                            <b>Hersteller: </b>@Html.DisplayFor(model => model.Developer.Name)
+                        </p>
+                        <br />
+                    </div>
+
+                    <div class="col-lg-12">
+                        <h6>
+                            @Html.DisplayFor(model => model.Description)
+
+                        </h6>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <br />
+                        <h6>Menge :</h6>
+                        <input type="number" class="form-control text-center w-100" style="border-radius: 15px;"  value="1">
+                    </div>
+                    <div class="col-lg-12 mt-2">
+                        <div class="row">
+                            <div class="col-lg-6 pb-2">
+                                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" style="border-radius: 15px;"data-bs-target="#Modal">Warenkorb hinzufügen</button>
+                            </div>
+
+
+
+
+                          
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    // Wait for the DOM content to be loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get references to the modal and image elements
+        const modal = document.getElementById('lightboxModal');
+        const img = document.getElementById('lightboxImage');
+
+        // Attach an event listener to the modal's show.bs.modal event
+        modal.addEventListener('show.bs.modal', function (event) {
+            // Get the related target that triggered the modal event
+            const target = event.relatedTarget;
+            // Retrieve the source URL of the image from the 'data-img-src' attribute
+            const src = target.getAttribute('data-img-src');
+            // Set the source attribute of the image element to display the selected image
+            img.setAttribute('src', src);
+        });
+    });
+</script>

@@ -1,0 +1,99 @@
+﻿
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+
+<link rel="stylesheet" href="~/css/user/login.css" />
+<script src="~/js/user/login.js"></script>
+
+
+<div class="container"> 
+    <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-8 frame containersmall">
+
+            <!-- login form -->
+            <form asp-controller="User" asp-action="LoginProc" method="post">
+
+                <div class="logo">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index" style="padding-top: 10px;">
+                    <img src="~/images/logo.png" class="d-block w-100" alt="...">
+                </a>
+                </div>
+
+                @if (TempData["LoginFlag"] != null)
+                {
+                    @*displays a message*@
+                    <div class="alert alert-danger mt-3" role="alert">
+                        @TempData["LoginFlag"]
+                    </div>
+                }
+             
+
+                <!-- Email input -->
+                <div class="form-outline mb-4">
+                    <label class="form-label fw-bold" for="form2Example1">Email Adresse</label> 
+                    <input type="email" 
+                        id="email" name="email" class="form-control" required />
+                </div>
+
+
+                <!-- Password input -->
+                <div class="form-outline mb-4 password-container">
+                    <label class="form-label fw-bold" for="form2Example2">Passwort</label>
+                    <input type="password" id="password" name="password" class="form-control password-field" required />
+
+                    <!-- far fa-eye Function -->
+                    <a role="button" class="password-button" onclick="passwordVisibleChange('password')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eye-fill password-show-icon" viewBox="0 0 16 16">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                        </svg>
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eye-slash-fill password-hide-icon" viewBox="0 0 16 16">
+                            <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z" />
+                            <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z" />
+                        </svg>
+                    </a>
+                </div>
+
+
+                <div class="formattingbutton">
+
+                    <!-- Checkbox input -->
+                    <div class="checkbox1">
+                        <input class="form-check-input me-2" type="checkbox" id="checkbox" name="checkbox" value ="true"/> Angemeldet bleiben                    
+                        <input type="hidden" value="false" name="checkbox" />
+                    </div>
+
+                    <!-- Submit button -->                  
+                    <div><button type="submit" class="btn btn-danger btn-block mb-4">Anmeldung</button></div>
+                </div>
+            </form> 
+
+
+                <div class="row mb-4 ">
+
+                    <div class="col d-flex justify-content-center linkcolorhover">
+                        <!-- simple Link -->
+                    <a href="~/Home/ForgotPasswordCustomer" class="textdark">Passwort vergessen?</a>
+                    </div>
+
+
+                </div>
+                <div class="row mb-4 ">
+
+                    <div class="col d-flex justify-content-center linkcolorhover">
+                        <!-- simple Link -->
+                    <a href="~/User/Registry" class="textdark">Konto erstellen</a>
+                    </div>
+
+
+                </div>
+        </div>
+    </div>
+</div>
+
+
+

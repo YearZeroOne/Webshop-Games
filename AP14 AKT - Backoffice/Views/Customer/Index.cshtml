@@ -1,0 +1,219 @@
+﻿@using WebShopLib.Models;
+@model IEnumerable<WebShopLib.Models.Customer>
+@inject WebShopLib.Models.ApplicationDbContext _context
+@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Customers</h1>
+
+<script>
+
+	//Get the button
+	let mybutton = document.getElementById("btn-back-to-top");
+
+	// When the user scrolls down 20px from the top of the document, show the button
+	window.onscroll = function () {
+		scrollFunction();
+	};
+
+	function scrollFunction() {
+		if (
+			document.body.scrollTop > 20 ||
+			document.documentElement.scrollTop > 20
+		) {
+			mybutton.style.display = "block";
+		} else {
+			mybutton.style.display = "none";
+		}
+	}
+	// When the user clicks on the button, scroll to the top of the document
+	mybutton.addEventListener("click", backToTop);
+
+	function backToTop() {
+		document.body.scrollTop = 0;
+		document.documentElement.scrollTop = 0;
+	}
+</script>
+
+<div class="container">
+	<div class="row justify-content-center mb-3">
+		<div class="col-md-12 col-xl-10">
+			<table>
+				<tr>
+					<td>
+						<button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#filter-sidebar" aria-controls="filter-sidebar" style="z-index: 1050;">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+								<path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+							</svg>Filter
+						</button>
+					</td>
+				</tr>
+				<form method="get" asp-action="Index">
+					<table>
+						<tr>
+							<td><button class="btn btn-danger" type="submit">Reset</button></td>
+						</tr>
+					</table>
+				</form>
+
+			</table>
+
+			<div class="offcanvas offcanvas-start" tabindex="-1" id="filter-sidebar" aria-labelledby="filter-sidebar-label" style="z-index: 1049;">
+				<div class="offcanvas-header">
+					<h5 class="offcanvas-title" id="filter-sidebar-label">Filter</h5>
+					<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+				</div>
+				<div class="offcanvas-body">
+
+					<form id="filter-form" method="get" asp-action="Filter">
+						<h5>Account locked</h5>
+						<input type="checkbox" name="locked" value="true">
+						<label for="locked">Locked</label><br>
+						<input type="checkbox" name="locked" value="false">
+						<label for="locked">Unlocked</label><br><br>
+
+						<h5>Payment Pending</h5>
+						<input type="checkbox" name="unpaid" value="true">
+						<label for="unpaid">Unpaid</label><br>
+						<input type="checkbox" name="unpaid" value="false">
+						<label for="unpaid">Paid</label><br><br>
+
+						<button type="submit" class="btn btn-danger">Filtern</button>
+					</form>
+					<br />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<form asp-action="Search" asp-controller="Customer" style="float:right; text-align:right;">
+		<div class="search-box">
+			<button class="btn-search">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+					<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+				</svg>
+			</button>
+			<input type="text" name="searchString" class="input-search" placeholder="Kundenummer/Name/Email">
+		</div>
+	</form>
+	<table class="table" style="word-break:break-all;">
+		<thead>
+			<tr>
+				<th>
+					Customer Number
+				</th>
+				<th>
+					Name
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.LastName)
+				</th>
+				<th>
+					Gender
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Email)
+				</th>
+				<th>
+					Address
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Phone)
+				</th>
+				<th>
+					Amount Orders
+				</th>
+				<th>
+					Amount of unpaid Orders
+				</th>
+				<th>
+					Is active
+				</th>
+
+				<th>
+					@Html.DisplayNameFor(model => model.LastOrderDate)
+				</th>
+
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model)
+			{
+				var adressList = _context.Addresses.Where(x => x.CustomerId == item.Id).ToList();
+
+				<tr>
+					<td>
+						@Html.DisplayFor(modelItem => item.CustomerNumber)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.FirstName)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.LastName)
+					</td>
+					<td>
+						@{
+							var gender = "";
+						}
+						@if (item.Gender == 1)
+						{
+							gender = "Mann";
+						}
+						else if (item.Gender == 2)
+						{
+							gender = "Frau";
+						}
+						else
+						{
+							gender = "Divers";
+						}
+						@Html.DisplayFor(modelItem => gender)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Email)
+					</td>
+					<td>
+						<select class="form-select address" style="font-size:16px">
+							@foreach (var adressOption in adressList)
+							{
+								<option value="1">@adressOption.AddressLine @adressOption.Zipcode @adressOption.City</option>
+							}
+						</select>
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Phone)
+					</td>
+					<td>
+						@_context.Orders.Where(x=>x.CustomerId == item.Id).ToList().Count()
+					</td>
+					<td>
+						@_context.Orders.Where(x=>x.CustomerId == item.Id && x.PaymentPending).ToList().Count()
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.IsActive)
+					</td>
+
+					<td>
+						@Html.DisplayFor(modelItem => item.LastOrderDate)
+					</td>
+
+					<td></td>
+					<td>
+						<a asp-action="Details" asp-route-id="@item.Id">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+								<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+								<path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+							</svg>
+						</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+</div>

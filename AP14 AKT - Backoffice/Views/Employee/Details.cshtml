@@ -1,0 +1,284 @@
+﻿@model WebShopLib.Models.Employee
+@inject WebShopLib.Models.ApplicationDbContext _context
+
+@{
+	ViewData["Title"] = "Details";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	string guid = Context.Request.Cookies["guid"];
+	var currentUser = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+
+}
+
+<h1>Details</h1>
+
+<div>
+	<h4>Employee</h4>
+	<hr />
+	<dl class="row">
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.FirstName)
+		</dt>
+		<dd class="col-sm-10">
+			@Html.DisplayFor(model => model.FirstName)
+		</dd>
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.LastName)
+		</dt>
+		<dd class="col-sm-10">
+			@Html.DisplayFor(model => model.LastName)
+		</dd>
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.BusinessEmail)
+		</dt>
+
+
+		@if (currentUser?.Role == 1)
+		{
+			<dd class="col-sm-10">
+				<form asp-controller="Employee" asp-action="EditBussinesMail">
+					<div id="clickToInputBussinesMail" style="cursor:pointer">
+						@Html.DisplayFor(model => model.BusinessEmail)
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+							<path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
+						</svg>
+					</div>
+					<input type="hidden" asp-for="BusinessEmail" name="userId" value="@currentUser.Id">
+					<input type="hidden" asp-for="Id" name="id" value="@Model.Id">
+					<div id="showSubmitButtonBussinesMail"></div>
+				</form>
+			</dd>
+		}
+
+		@if (currentUser.Role == 2 || currentUser.Role == 3)
+		{
+			<dd class="col-sm-10">
+				@Html.DisplayFor(model => model.BusinessEmail)
+
+			</dd>
+		}
+
+
+
+
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.PrivateEmail)
+		</dt>
+		<dd class="col-sm-10">
+			<form asp-controller="Employee" asp-action="EditEmail">
+				<div id="clickToInput" style="cursor:pointer">
+					@Html.DisplayFor(model => model.PrivateEmail)
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+						<path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
+					</svg>
+				</div>
+				<input type="hidden" asp-for="PrivateEmail" name="userId" value="@currentUser.Id" />
+				<input type="hidden" asp-for="Id" name="id" value="@Model.Id" />
+				<div id="showSubmitButton"></div>
+			</form>
+		</dd>
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.PrivatePhone)
+		</dt>
+		<dd class="col-sm-10">
+			<form asp-controller="Employee" asp-action="EditTelNr">
+				<div id="clickToInputTel" style="cursor:pointer">
+					@Html.DisplayFor(model => model.PrivatePhone)
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+						<path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
+					</svg>
+				</div>
+				<input type="hidden" asp-for="PrivateEmail" name="userId" value="@currentUser.Id" />
+				<input type="hidden" asp-for="Id" name="id" value="@Model.Id" />
+				<div id="showSubmitButtonTel"></div>
+			</form>
+		</dd>
+		@{
+			var role = "";
+			if (Model.Role == 1)
+			{
+				role = "Admin";
+			}
+			else if (Model.Role == 2)
+			{
+				role = "Manager";
+			}
+			else
+			{
+				role = "Employee";
+			}
+		}
+
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.Role)
+		</dt>
+		<dd class="col-sm-10">
+			@{
+				if (currentUser?.Role == 1)
+				{
+					<form asp-controller="Employee" asp-action="EditRole" method="post">
+						<input type="hidden" value="@currentUser.Id" name="userId">
+						<select name="role">
+							<option value="1">Admin</option>
+							<option value="2">Manager</option>
+							<option value="3">Employee</option>
+						</select>
+						<input type="hidden" value="@Model.Id" name="employeeId">
+						<input type="submit" value="Submit">
+					</form>
+				}
+				else
+				{
+					@Html.Raw(role)
+				}
+			}
+		</dd>
+
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.UserName)
+		</dt>
+		<dd class="col-sm-10">
+			<form asp-controller="Employee" asp-action="EditUserName">
+				<div id="clickToInputUsername" style="cursor:pointer">
+					@Html.DisplayFor(model => model.UserName)
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+						<path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
+					</svg>
+				</div>
+				<input type="hidden" asp-for="UserName" name="userId" value="@currentUser.Id" />
+				<input type="hidden" asp-for="Id" name="id" value="@Model.Id" />
+				<div id="showSubmitButtonUsername"></div>
+			</form>
+		</dd>
+	</dl>
+</div>
+<div>
+	<a href="/Home/Hub">Back to List</a>
+</div>
+
+
+<script>
+	const clickToInput = document.getElementById('clickToInput');
+	const clickToInputTel = document.getElementById('clickToInputTel');
+	const clickToInputBussinesMail = document.getElementById('clickToInputBussinesMail');
+	const clickToInputUsername = document.getElementById('clickToInputUsername');
+
+	
+
+	//const clickToInputRole = document.getElementById('clickToInputRole');
+	const showSubmitButton = document.getElementById('showSubmitButton');
+	const showSubmitButtonTel = document.getElementById('showSubmitButtonTel');
+	const showSubmitButtonBussinesMail = document.getElementById('showSubmitButtonBussinesMail');
+	const showSubmitButtonUsername = document.getElementById('showSubmitButtonUsername');
+
+
+
+	//clickToInputRole.addEventListener('click', function () {
+
+	//    const inputElementRole = document.createElement('input');
+	//    const inputElementRoleSelect = document.createElement('input');
+	//    const buttonElementRole = document.createElement('button');
+
+	//    inputElementRoleSelect.type = 'select';
+
+	//    inputElementRole.type = 'password';
+	//    inputElementRole.placeholder = 'Enter your Password';
+	//    inputElementRole.required = true;
+	//    inputElementRole.name = 'password';
+
+	//    buttonElementRole.type = 'submit';
+	//    buttonElementRole.textContent = 'Submit';
+
+	//    clickToInputRole.parentNode.replaceChild(inputElementRole, clickToInputRole);
+	//    showSubmitButtonRole.parentNode.replaceChild(buttonElementRole, showSubmitButtonRole);
+
+	//});
+
+
+	clickToInput.addEventListener('click', function () {
+
+		const inputElement = document.createElement('input');
+		const buttonElement = document.createElement('button');
+
+		inputElement.type = 'email';
+		inputElement.placeholder = 'Enter your Email';
+		inputElement.required = true;
+		inputElement.name = 'employeeEmail';
+
+		buttonElement.type = 'submit';
+		buttonElement.textContent = 'Submit';
+
+		clickToInput.parentNode.replaceChild(inputElement, clickToInput);
+		showSubmitButton.parentNode.replaceChild(buttonElement, showSubmitButton);
+
+	});
+
+
+	clickToInputTel.addEventListener('click', function () {
+
+
+
+
+		const inputElementTel = document.createElement('input');
+		const buttonElement = document.createElement('button');
+
+		inputElementTel.type = 'tel';
+		inputElementTel.placeholder = 'Enter your Telnumber';
+		inputElementTel.required = true;
+		inputElementTel.name = 'telNum';
+
+		buttonElement.type = 'submit';
+		buttonElement.textContent = 'Submit';
+
+		clickToInputTel.parentNode.replaceChild(inputElementTel, clickToInputTel);
+		showSubmitButtonTel.parentNode.replaceChild(buttonElement, showSubmitButtonTel);
+
+
+		
+
+
+
+
+	});
+
+
+	clickToInputBussinesMail.addEventListener('click', function () {
+		const inputElementBussinesMail = document.createElement('input');
+		const buttonElement = document.createElement('button');
+
+
+		inputElementBussinesMail.type = 'email';
+		inputElementBussinesMail.placeholder = 'Enter your Email';
+		inputElementBussinesMail.required = true;
+		inputElementBussinesMail.name = 'bussinesMail';
+
+		buttonElement.type = 'submit';
+		buttonElement.textContent = 'Submit';
+
+		clickToInputBussinesMail.parentNode.replaceChild(inputElementBussinesMail, clickToInputBussinesMail);
+		showSubmitButtonBussinesMail.parentNode.replaceChild(buttonElement, showSubmitButtonBussinesMail);
+
+	});
+
+	clickToInputUsername.addEventListener('click', function(){
+
+		const inputElementUserName = document.createElement('input');
+		const buttonElement = document.createElement('button');
+		
+		
+
+		inputElementUserName.type ='text';
+		inputElementUserName.placeholder = 'Enter Username';
+		inputElementUserName.required = true;
+		inputElementUserName.name = 'userName';
+
+		buttonElement.type = 'submit';
+		buttonElement.textContent = 'Submit';
+
+		clickToInputUsername.parentNode.replaceChild(inputElementUserName, clickToInputUsername);
+		showSubmitButtonUsername.parentNode.replaceChild(buttonElement, showSubmitButtonUsername);
+	});
+
+
+
+</script>

@@ -1,0 +1,32 @@
+﻿@using WebShopLib.Models
+@model Order
+
+@* Create a table to display a list of products in the order. The table has the classes "table", "table-bordered", and "table-striped" for styling. *@
+<table class="table table-bordered table-striped product-list">
+    <thead>
+        <tr>
+            @* Create the table header with the column names Product Name, Quantity, Digital, and Gross Price *@
+            <th>Produktname</th>
+            <th>Anzahl</th>
+            <th>Digital</th>
+            <th>Bruttopreis</th>
+        </tr>
+    </thead>
+    <tbody>
+        @* Iterate over each item in OrderProducts in the Order model *@
+        @foreach (var op in Model.OrderProducts)
+        {
+            @* For each item, create a new row *@
+            <tr>
+                <td>@op.Products.Name</td>
+                <td>@op.Quantity</td>
+
+                @* The third column displays whether the product is digital or not. If the ProductCategoryId is 12, the product is digital (displays "Ja"); otherwise, it is not (displays "Nein"). *@
+                <td>@(op.Products.ProductCategoryId == 12 ? "Ja" : "Nein")</td>
+
+                @* The fourth column displays the gross price of the product, calculated by adding the tax rate to the net unit price. The price is displayed with two decimal places. *@
+                <td>@((op.Products.NetUnitPrice * (1 + op.Products.ProductCategory.TaxRate / 100)).ToString("F2"))</td>
+            </tr>
+        }
+    </tbody>
+</table>

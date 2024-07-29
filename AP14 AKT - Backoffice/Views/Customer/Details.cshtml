@@ -1,0 +1,293 @@
+﻿@model List<AP14_AKT___Backoffice.ViewModels.MultiViewModel>
+@inject WebShopLib.Models.ApplicationDbContext _context
+@using Microsoft.EntityFrameworkCore
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var amountOrders = _context.Orders.Where(x => x.CustomerId == Model.FirstOrDefault().Customer.Id).Count();
+}
+
+
+
+
+
+
+
+
+
+
+
+<h1>Details</h1>
+
+<div>
+    <h4>Customer</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Customer Number
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.FirstOrDefault().Customer.CustomerNumber)
+        </dd>
+        <dt class="col-sm-2">
+            FirstName
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.FirstOrDefault().Customer.FirstName)
+        </dd>
+        <dt class="col-sm-2">
+            LastName
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.FirstOrDefault().Customer.LastName)
+        </dd>
+        <dt class="col-sm-2">
+            Gender
+        </dt>
+        <dd class="col-sm-10">
+            @{
+                var gender = "";
+            }
+            @if (Model.FirstOrDefault().Customer.Gender == 1)
+            {
+                gender = "Mann";
+            }
+            else if (Model.FirstOrDefault().Customer.Gender == 2)
+            {
+                gender = "Frau";
+            }
+            else
+            {
+                gender = "Divers";
+            }
+            @Html.Raw(gender)
+        </dd>
+        <dt class="col-sm-2">
+            Email
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.FirstOrDefault().Customer.Email)
+        </dd>
+
+        <dt class="col-sm-2">
+            Phone
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.FirstOrDefault().Customer.Phone)
+        </dd>
+        <dt class="col-sm-2">
+            AmountOrders
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(amountOrders)
+        </dd>
+        <dt class="col-sm-2">
+            UnpaidOrders
+        </dt>
+        <dd class="col-sm-10">
+
+            @Html.Raw(Model.FirstOrDefault().Order.PaymentPending.ToString().Count())
+
+        </dd>
+        <dt class="col-sm-2">
+            LastOrderDate
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.FirstOrDefault().Customer.LastOrderDate.ToString())
+        </dd>
+
+
+
+        @{
+            var currentEmployee = _context.Employees.Where(x => x.Guid.Equals(Context.Request.Cookies["guid"])).FirstOrDefault();
+
+            if (currentEmployee.Role == 1 || currentEmployee.Role == 2)
+            {
+                <dt class="col-sm-2">
+                    Sperr Status
+                </dt>
+                <dd class="col-sm-10">
+
+
+
+                    <form asp-action="ChangeLockedStatusPasswordConfirm" asp-controller="Customer">
+                        <div id="clickToInput" style="cursor: pointer ; color:blue ; display: contents">
+                            @if (Model.FirstOrDefault().Customer.IsLocked == true)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
+                                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
+                                </svg>
+                            }
+                            else if (Model.FirstOrDefault().Customer.IsLocked == false)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-unlock" viewBox="0 0 16 16">
+                                    <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2zM3 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H3z" />
+                                </svg>
+                            }
+                        </div>
+
+                        <input type="hidden" name="currentEmployeeId" value="@currentEmployee.Id" />
+                        <input type="hidden" name="customerId" value="@Model.FirstOrDefault().Customer.Id" />
+                        <div id="showSubmitButton" onsubmit=""></div>
+                    </form>
+
+
+                </dd>
+            }
+        }
+
+    </dl>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                OrderNumber
+            </th>
+            <th>
+                OrderDate
+            </th>
+            <th>
+                Details
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Details
+            </th>
+            <th>
+                PDF Rechnung
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+
+
+
+
+
+        @foreach (var item in Model)
+        {
+            decimal fullprice = 0;
+            <tr>
+                <td>
+                    @if (item != null)
+                    {
+                        @Html.Raw(item.Order.OrderNumber)
+                    }
+                    else
+                    {
+                        <i>no data</i>
+                    }
+
+                </td>
+                <td>
+                    @if (item != null)
+                    {
+                        @Html.Raw(item.Order.OrderDate.ToShortDateString())
+                    }
+                    else
+                    {
+                        <i>no data</i>
+                    }
+
+
+                </td>
+                @if (item != null)
+                {
+                    <td class="dropdown">
+                        <button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Products
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                            <div class="dropdown-item">
+                                Quantity | Product Name | NetPrice | GrossPrice | Payment Status | Payment Method
+                            </div>
+                            @foreach (var product in item.Product)
+                            {
+                                var price = product.Item1.NetUnitPrice;
+                                var grossPrice = price * (1 + product.Item2.TaxRate / 100);
+                                var quantity = _context.OrderProducts.Where(x => x.ProductsId == product.Item1.Id).FirstOrDefault()?.Quantity;
+                                var payMethod = _context.PaymentMethods.Include(x => x.Orders).Where(x => x.Id == item.Order.PaymentMethodId).FirstOrDefault();
+                                string pending = "";
+                                fullprice += grossPrice;
+
+                                if (item.Order.PaymentPending = true)
+                                {
+                                    pending = "Pending";
+                                }
+                                else if (item.Order.PaymentPending)
+                                {
+                                    pending = "Paid";
+                                }
+                                <div class="dropdown-item">
+                                    @quantity | @product.Item1.Name | @Math.Round(price,2) € | @Math.Round(grossPrice,2) € | @pending | @payMethod.Name
+                                </div>
+                            }
+                        </div>
+                    </td>
+                }
+                else
+                {
+                    <i>no data</i>
+                }
+                <td>
+                    @Math.Round(fullprice,2) €
+                </td>
+
+                <td>
+                    @{
+                        var id = item.Order.Id;
+
+                        <a asp-action="Details" asp-controller="Orders" asp-route-id="@id">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                            </svg>
+                        </a>
+                    }
+                </td>
+
+
+
+                <td>
+                    @Html.ActionLink("Download", "PrepareInvoice", "Orders", new{orderId = item.Order.Id})
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<script>
+    const clickToInput = document.getElementById('clickToInput');
+
+    const showSubmitButton = document.getElementById('showSubmitButton');
+
+
+
+    clickToInput.addEventListener('click', function () {
+        const inputElement = document.createElement('input');
+        const buttonElement = document.createElement('button');
+
+
+
+        inputElement.type = 'password';
+        inputElement.placeholder = 'Enter your Password';
+        inputElement.required = true;
+        inputElement.name = 'password';
+
+        buttonElement.type = 'submit';
+        buttonElement.textContent = 'Submit';
+
+        clickToInput.parentNode.replaceChild(inputElement, clickToInput);
+        showSubmitButton.parentNode.replaceChild(buttonElement, showSubmitButton);
+
+    });
+</script>
+
+

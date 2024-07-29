@@ -1,0 +1,205 @@
+﻿@using WebShopLib.Models;
+@model WebShopLib.Models.Customer
+
+<div class="container">
+
+    <h1 style="margin-top:2%; margin-bottom:2%">Adresseverwaltung</h1>
+    @{
+        //passes the message of the ViewData as a string to a variable
+        var lastAddressWarning = ViewData["LastAddressWarning"] as string;
+    }
+
+    @if (!string.IsNullOrEmpty(lastAddressWarning))
+    {
+        @*displays the message that the last address must not be deleted*@
+        <div class="alert alert-danger">
+            @lastAddressWarning
+        </div>
+    }
+
+    <form asp-controller="User" asp-action="UpdateShippingAndBillAddress" method="post" id="update-address-form">
+
+        <div class="table-responsive mt-3 mb-3">
+
+            @*a user's parameters are displayed*@
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Vorname</th>
+                        <th>Nachname</th>
+                        <th>Addresse</th>
+                        <th>Stadt</th>
+                        <th>PLZ</th>
+                        <th>Staat</th>
+                        <th>Lieferungsadresse</th>
+                        <th>Rechnungsadresse</th>
+                        <th>Verwaltung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @*a query is run on the "Address" property of a model or object and the results are added to a list*@
+                    @foreach (var address in (Model.Addresses ?? Enumerable.Empty<Address>()).ToList())
+                    {
+                        <tr>
+                            <td>@address.FirstName</td>
+                            <td>@address.LastName</td>
+                            <td>@address.AddressLine</td>
+                            <td>@address.City</td>
+                            <td>@address.Zipcode</td>
+                            <td>@address.Country</td>
+                            <td><input type="radio" class="shippingAddress" name="shippingAddress" value="@address.Id" @(address.IsDeliveryAddress == true ? "checked" : "") /></td>
+                            <td><input type="radio" class="billAddress" name="billAddress" value="@address.Id" @(address.IsBillingAddress == true ? "checked" : "") /></td>
+                            <td>
+                                <a asp-controller="User" asp-action="AddressEdit" asp-route-id="@address.Id" asp-route-guid="@Context.Request.Cookies["guid"]" class="btn btn-danger">Bearbeiten</a>
+                                <a asp-controller="User" asp-action="AddressDelete" asp-route-id="@address.Id" asp-route-guid="@Context.Request.Cookies["guid"]" class="btn btn-danger">Löschen</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <input type="hidden" class="form-control" name="guid" value="@Context.Request.Cookies["guid"]">
+        <input type="hidden" class="form-control" name="shippingAddressId">
+        <input type="hidden" class="form-control" name="billAddressId">
+
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-danger" id="addAddressButton">Weitere Adresse hinzufügen</button>
+            <input type="submit" class="btn btn-danger" id="update-address-btn" value="Aktualisieren" style="display:none;" />
+        </div>
+    </form>
+
+
+    <div class="mt-3 mb-3">
+        <form asp-controller="User" asp-action="AddAddress" method="post" id="new-address-form">
+            <div id="newAddressForm" style="display:none;">
+
+                @*the user's details are displayed*@
+                <div class="form-group">
+                    <label for="newAddressLine">Vorname:</label>
+                    <input type="text" class="form-control" id="newFirstName" name="FirstName">
+                </div>
+
+                <div class="form-group">
+                    <label for="newAddressLine">Nachname:</label>
+                    <input type="text" class="form-control" id="newLastName" name="LastName">
+                </div>
+
+                <div class="form-group">
+                    <label for="newAddressLine">Adresse:</label>
+                    <input type="text" class="form-control" id="newAddressLine" name="AddressLine">
+                </div>
+                <div class="form-group">
+                    <label for="newCity">Stadt:</label>
+                    <input type="text" class="form-control" id="newCity" name="City">
+                </div>
+                <div class="form-group">
+                    <label for="newZipcode">Postleitzahl:</label>
+                    <input type="text" class="form-control" id="newZipcode" name="Zipcode">
+                </div>
+                <div class="form-group">
+                    <label for="newCountry">Land:</label>
+                    <input type="text" class="form-control" id="newCountry" name="Country">
+                </div>
+
+                <input type="hidden" class="form-control" name="customerId" value=@Model.Id>
+
+                <input type="hidden" class="form-control" name="guid" value="@Context.Request.Cookies["guid"]">
+                <input type="submit" value="Neue Adresse hinzufügen" class="btn btn-danger ml-2 mt-3 mb-3" id="save-new-address-btn" />
+
+                <p id="address-validation-warning" class="text-warning" style="display: none;"></p>
+            </div>
+        </form>
+    </div>
+    
+</div>
+
+
+<script>
+
+    //new address
+    const addAddressButton = document.getElementById('addAddressButton');
+    addAddressButton.addEventListener('click', function () {
+        const newAddressForm = document.getElementById('newAddressForm');
+        newAddressForm.style.display = 'block';
+        newAddressForm.scrollIntoView({ behavior: "smooth" });
+    });
+
+    //address form validation
+    const saveNewAddressButton = document.getElementById('save-new-address-btn');
+    saveNewAddressButton.addEventListener('click', function () {
+        const newAddressLine = document.getElementById('newAddressLine');
+        const newCity = document.getElementById('newCity');
+        const newZipcode = document.getElementById('newZipcode');
+        const newCountry = document.getElementById('newCountry');
+
+        const warningMessage = document.getElementById('address-validation-warning');
+        warningMessage.style.display = 'none';
+
+        if (newAddressLine.value === '' || newCity.value === '' || newZipcode.value === '' || newCountry.value === '') {
+            warningMessage.innerText = 'Bitte füllen Sie alle Felder aus';
+            warningMessage.style.display = 'block';
+            return;
+        }
+
+        const newAddress = {
+            AddressLine: newAddressLine.value,
+            City: newCity.value,
+            Zipcode: newZipcode.value,
+            Country: newCountry.value
+        };
+    });
+
+    // Show "Aktualisieren" button when shippingAddress or billAddress is changed
+    const shippingAddresses = document.querySelectorAll('.shippingAddress');
+    const billAddresses = document.querySelectorAll('.billAddress');
+    const updateAddressButton = document.getElementById('update-address-btn');
+
+    function showUpdateButton() {
+        updateAddressButton.style.display = 'block';
+    }
+
+    shippingAddresses.forEach(function (radio) {
+        radio.addEventListener('change', showUpdateButton);
+    });
+
+    billAddresses.forEach(function (radio) {
+        radio.addEventListener('change', showUpdateButton);
+    });
+
+    //update values in hidden inputs (shipping and bill address)
+    const shippingAddressIdInput = document.getElementsByName('shippingAddressId')[0];
+    const billAddressIdInput = document.getElementsByName('billAddressId')[0];
+
+    for (let i = 0; i < shippingAddresses.length; i++) {
+        shippingAddresses[i].addEventListener('change', function () {
+            shippingAddressIdInput.value = this.value;
+            document.getElementById('update-address-btn').style.display = 'block';
+        });
+    }
+
+    for (let i = 0; i < billAddresses.length; i++) {
+        billAddresses[i].addEventListener('change', function () {
+            billAddressIdInput.value = this.value;
+            document.getElementById('update-address-btn').style.display = 'block';
+        });
+    }
+
+    // Set initial values of hidden inputs for shipping and billing addresses on page load
+    function setInitialHiddenInputValues() {
+        for (let i = 0; i < shippingAddresses.length; i++) {
+            if (shippingAddresses[i].checked) {
+                shippingAddressIdInput.value = shippingAddresses[i].value;
+            }
+        }
+
+        for (let i = 0; i < billAddresses.length; i++) {
+            if (billAddresses[i].checked) {
+                billAddressIdInput.value = billAddresses[i].value;
+            }
+        }
+    }
+
+    setInitialHiddenInputValues();
+
+</script>

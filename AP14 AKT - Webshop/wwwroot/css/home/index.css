@@ -1,0 +1,63 @@
+﻿
+.card {
+    border-radius: 0;
+    border: 0;
+}
+
+@@media only screen and (max-width: 776px) {
+    .carousel-caption p {
+        display: none;
+    }
+}
+
+.carousel-caption {
+    padding: 10%;
+    z-index: 1;
+    overflow: hidden;
+    margin-top: -80px;
+}
+
+.overlay {
+    color: black;
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    width: 100%;
+    padding: 15%;
+    text-align: left;
+    width: 70%;
+}
+
+.carousel-item:after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.5);
+}
+
+.gallery {
+    margin-top: 30%;
+}
+
+.img-fluid {
+    height: auto;
+    max-width: 100%;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.px-4 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.py-4 {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}

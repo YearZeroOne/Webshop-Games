@@ -1,0 +1,36 @@
+﻿@model WebShopLib.Models.Address
+
+@{
+    ViewData["Title"] = "Delete Address";
+}
+
+@*address can be deleted*@
+<h2>Adresse löschen</h2>
+
+<div class="alert alert-danger">
+    <p>Möchten Sie die Adresse löschen?</p>
+
+
+    @*the parameters for data deletion are displayed*@
+    <dl class="row">
+        <dt class="col-sm-2">ID:</dt>
+        <dd class="col-sm-10">@Model.Id</dd>
+
+        <dt class="col-sm-2">Adresse:</dt>
+        <dd class="col-sm-10">@Model.AddressLine</dd>
+
+        <dt class="col-sm-2">Stadt:</dt>
+        <dd class="col-sm-10">@Model.City</dd>
+
+        <dt class="col-sm-2">PLZ:</dt>
+        <dd class="col-sm-10">@Model.Zipcode</dd>
+    </dl>
+
+    @*the address deletion form with the parameters is sent to the method*@
+    <form asp-controller="User" asp-action="AddressDeletePost" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <input type="hidden" name="guid" value="@ViewData["guid"]" />
+        <button type="submit" class="btn btn-danger">Löschen</button>
+        <a asp-action="AddressManagement" asp-route-guid="@ViewData["guid"]" class="btn btn-secondary">Abbrechen</a>
+    </form>
+</div>

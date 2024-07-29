@@ -1,0 +1,21 @@
+﻿@using Microsoft.EntityFrameworkCore;
+@using WebShopLib.Services;
+@model int
+@inject WebShopLib.Models.ApplicationDbContext _context
+
+@{
+    var order = _context.Orders.Include(x => x.Customer).Include(x => x.OrderProducts).ThenInclude(x => x.Products).ThenInclude(x => x.ProductCategory).Where(x => x.Id == Model).FirstOrDefault();
+
+    List<(string, int, decimal)> itemList = new List<(string, int, decimal)>();
+
+    foreach (var item in order.OrderProducts)
+    {
+        itemList.Add((item.Products.Name, item.Quantity, (item.Products.NetUnitPrice) * (1 + (item.Products.ProductCategory.TaxRate)/100)));
+    }
+
+    string receiptHtml = ReceiptGenerator.GenerateReceiptHtml(order.OrderDate.ToShortDateString(), order.Customer.FirstName + " " + order.Customer.LastName, itemList);
+}
+
+@Html.ActionLink("PDF herunterladen","DownloadInvoice","Orders",new{ id = Model, html = receiptHtml })
+
+@Html.Raw(receiptHtml)

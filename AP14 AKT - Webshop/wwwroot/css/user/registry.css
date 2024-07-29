@@ -1,0 +1,9 @@
+﻿.container {
+    height: 100%;
+    padding: 5%;
+}
+
+
+.form-check-input:checked {
+    background-color: rgb(228, 33, 55);
+}

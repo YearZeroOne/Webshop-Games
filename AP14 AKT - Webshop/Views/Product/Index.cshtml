@@ -1,0 +1,333 @@
+﻿@model IEnumerable<WebShopLib.Models.Product>
+@using AP14_AKT___Webshop.Controllers;
+@using WebShopLib.Models;
+
+
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+
+
+
+<link rel="stylesheet" href="~/css/product/index.css" />
+
+
+
+<br />
+
+<div class="container">
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-12 col-xl-10">
+
+
+            <table>
+                <tr>
+                    <td>
+
+                        <button class="btn btn-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#filter-sidebar" aria-controls="filter-sidebar" style="z-index: 1050;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+                                <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+
+
+                            </svg>
+                            Filter
+
+                        </button>
+                    </td>
+                    <td>
+                        <form method="get" asp-action="Index">
+                            <table>
+                                <tr>
+                                    <td><button class="btn btn-outline-danger" type="submit">Reset</button></td>
+
+                                </tr>
+                            </table>
+
+
+
+                        </form>
+
+                    </td>
+                </tr>
+            </table>
+
+
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="filter-sidebar" aria-labelledby="filter-sidebar-label" style="z-index: 1049;">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="filter-sidebar-label">Filter</h5>
+
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+@*                              filter showing all available options depending on entries in db
+*@
+                    <form id="filter-form" method="get" asp-action="Filter">
+                        <h5>Publisher</h5>
+
+
+                        @using (var context = new ApplicationDbContext())
+                        {
+                            var developers = context.Products
+                            .Select(x => x.Developer.Name)
+                            .Distinct()
+                            .ToList();
+                            foreach (var developer in developers)
+                            {
+                                <input type="checkbox" id="@developer" name="publishers" value="@developer">
+                                <label for="@developer">@developer</label>
+                                <br>
+                            }
+                        }
+
+                        <h5>Kategorie</h5>
+                        @using (var context = new ApplicationDbContext())
+                        {
+                            var genres = context.Genres
+                            .Select(x => x.Name)
+                            .Distinct()
+                            .ToList();
+                            foreach (var genre in genres)
+                            {
+                                <input type="checkbox" id="@genre" name="categories" value="@genre">
+                                <label for="@genre">@genre</label>
+                                <br>
+                            }
+                        }
+
+                        <h5>Preis</h5>
+                        <div>
+                            <label for="price-range-min">~ Min:</label>
+                            <input type="number" id="price-range-min" name="minPrice" min="0" max="200" value="10">
+
+                            <input type="range" id="price-range" name="priceRange" min="0" max="200" step="10" value="100">
+
+                            <label for="price-range-max">~ Max:</label>
+                            <input type="number" id="price-range-max" name="maxPrice" min="0" max="200" value="200">
+                        </div>
+
+
+
+
+                        <h5>Produktart</h5>
+                        <input type="checkbox" id="type1" name="productTypes" value="Physical" checked>
+                        <label for="type1"> Physisch</label><br>
+                        <input type="checkbox" id="type2" name="productTypes" value="Digital" checked>
+                        <label for="type2"> Digital</label><br><br>
+
+                        <button type="submit" class="btn btn-danger">Filtern</button>
+
+                    </form>
+
+                    <br />
+
+
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+
+
+
+@if (!Model.Any())
+{
+
+    <div class="container">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-12 col-xl-10">
+                <h4>Es konnten keine Produkte gefunden werden.</h4>
+
+            </div>
+
+        </div>
+
+
+
+
+    </div>
+}
+
+else
+{
+    @foreach (var item in Model)
+    {
+        <section>
+            <div class="container" data-aos="fade-right">
+                <div class="row justify-content-center mb-3">
+                    <div class="col-md-12 col-xl-10">
+                        <div class="card shadow-0 border rounded-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12 col-lg-3 col-xl-3 mb-4 mb-lg-0">
+
+                                        @if (item.Images.Any())
+                                        {
+                                            var primaryImage = item.Images.Where(i => i.IsPrimaryPic).FirstOrDefault();
+                                            if (primaryImage != null)
+                                            {
+                                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(primaryImage.Picture)" class="w-100" />
+
+                                            }
+                                        }
+
+                                    </div>
+                                    <div class="col-md-6 col-lg-6 col-xl-6">
+                                        <h5>@Html.DisplayFor(modelItem => item.Name)</h5>
+                                        <div class="mt-1 mb-0 text-muted small">
+                                            <span>Publisher: </span>
+                                            <span class="text-primary"></span>
+                                            <span>@Html.DisplayFor(modelItem => item.Developer.Name)</span>
+                                            <span class="text-primary"></span>
+                                        </div>
+                                        <div class="mt-1 mb-0 text-muted small">
+                                            @if (item.ProductCategory.Name == "Digital")
+                                            {
+                                                <span>digital</span>
+
+
+                                            }
+                                            else
+                                            {
+                                                <span>physisch</span>
+                                            }
+                                            <span class="text-primary"></span>
+                                        </div>
+                                        <div class="mt-1 mb-0 text-muted small">
+
+                                            @if (item.IsActive == false)
+
+                                            {
+
+                                                <span>⭕ inaktiv</span>
+
+
+
+                                            }
+
+
+
+                                            else
+                                            {
+
+                                                @if (item.Stock >= 10)
+                                                {
+                                                    <span style="color: green">&#x1F7E2; verfügbar</span>
+                                                }
+
+                                                else if (item.Stock < 10 && item.Stock > 0)
+                                                {
+                                                    <span style="color: orange">&#x1F7E0; wenig verfügbar</span>
+
+                                                }
+
+                                                else if (item.Stock == 0)
+                                                {
+                                                    <span style="color: red">&#x1F534; nicht verfügbar</span>
+                                                }
+
+
+                                            }
+
+@*                                            .Sum(op => op.Quantity * op.Products.NetUnitPrice * (1 + op.Products.ProductCategory.TaxRate / 100)
+*@                                            <span class="text-primary"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-3 col-xl-3">
+                                        <div class="d-flex flex-row align-items-center mb-1">
+                                            <h4 class="mb-1 me-1">@(string.Format("{0:0.00}", item.NetUnitPrice * (1 + item.ProductCategory.TaxRate / 100))) €</h4>
+                                        </div>
+                                        <div class="d-flex flex-column mt-4" style="border-radius: 15px;">
+                                            @Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "btn btn-outline-danger btn-sm mt-2", style = "border-radius: 15px;"})
+
+                                            <form method="post" asp-action="AddToCart" class="d-flex flex-column">
+                                                <input type="hidden" name="price" value="@item.NetUnitPrice" />
+
+                                                <input type="hidden" name="productId" value="@item.Id" />
+                                                <input type="hidden" name="guid" value="@Context.Request.Cookies["guid"]" />
+
+
+                                                @if (item.Stock == 0)
+                                                {
+
+                                                    <button class="btn btn-outline-danger btn-sm mt-2 buttonShake" type="button" style="border-radius: 15px;">
+                                                        Nicht verfügbar
+                                                    </button>
+
+                                                }
+
+                                                else
+                                                {
+
+                                                    if (item.IsActive == false)
+                                                    {
+
+                                                        <button class="btn btn-outline-dark btn-sm mt-2 buttonShake" style="border-radius: 15px;" type="button">
+                                                            Inaktiv
+                                                        </button>
+
+                                                    }
+
+                                                    else
+                                                    {
+                                                        <button class="btn btn-danger btn-sm mt-2" style="border-radius: 15px;" type="submit">
+                                                            Warenkorb hinzufügen
+                                                        </button>
+
+                                                    }
+
+                                                }
+
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@if (TempData["Message"] != null)
+{
+    <script type="text/javascript">
+        window.onload = function () {
+        @* Without "Html.Raw" German characters are not displayed correctly  *@
+                alert('@Html.Raw(TempData["Message"])');
+        };
+    </script>
+}
+
+
+
+<script>
+    const slider = document.getElementById("price-range");
+    const minPrice = document.getElementById("price-range-min");
+    const maxPrice = document.getElementById("price-range-max");
+
+    // Set initial max price value
+    maxPrice.value = slider.value;
+
+    // Update the input field value and max value when the slider value changes
+    slider.addEventListener("input", function () {
+        minPrice.value = 10;
+        maxPrice.value = slider.value;
+    });
+    // Update the slider value when the input field value changes
+    maxPrice.addEventListener("input", function () {
+        slider.value = maxPrice.value;
+    });
+</script>
+

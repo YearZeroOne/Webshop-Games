@@ -1,0 +1,21 @@
+﻿@using WebShopLib.Models;
+@model Address
+
+@* Check if the model is not null, i.e. if an address has been provided *@
+@if (Model != null)
+@* If an address has been provided, display it in a div element with the class "shiping-address" *@
+{   <div class="shiping-address">
+        @* Display the address line, city, and zipcode, and country in separate lines *@
+        <p>
+            @Model.AddressLine<br>
+            @Model.City, @Model.Zipcode<br>
+            @Model.Country
+        </p>
+    </div>
+    
+}
+else
+{
+    @* If no address has been provided, display an error message in a paragraph element with class "text-danger" *@
+    <p class="text-danger">Error! The shipping address is missing from the database!</p>
+}

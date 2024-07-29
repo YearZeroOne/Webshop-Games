@@ -1,0 +1,180 @@
+﻿@using Microsoft.IdentityModel.Tokens;
+@using WebShopLib.Models;
+@model WebShopLib.Models.Customer
+
+<div class="container">
+    <h1 class="my-4">Kontoübersicht</h1>
+
+    @*shows the personal data*@
+    <h3>Persönliche Daten</h3>
+    <p>
+        Vorname: @Model.FirstName<br>
+        Nachname: @Model.LastName<br>
+        Geschlecht: @switch (Model.Gender)
+        {
+            case 1:
+                @:Mann
+                break;
+            case 2:
+                @:Frau
+                break;
+            case 3:
+                @:Diverse
+                break;
+            default:
+                @:"Unbekannt"
+                break;
+        }<br>
+        Email: @Model.Email<br>
+        Telefon: @Model.Phone<br>
+        Kundenummer: @Model.CustomerNumber<br />
+    </p>
+
+    <a asp-action="EditPersonalData" asp-controller="User" asp-route-guid="@Context.Request.Cookies["guid"]" class="btn btn-danger mb-3">Persönliche Daten bearbeiten</a>
+
+    @*shows the details of the last orders*@
+    <h3>Letzte Bestellungen</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Bestellnummer</th>
+                    <th>Bestelldatum/Nr</th>
+                    <th>Status</th>
+                    <th>Gesamtbetrag</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @*this foreach runs through the model and outputs the various parameters*@
+                @foreach (var order in Model.Orders)
+                {
+                    <tr>
+                        <td>@order.OrderNumber</td>
+                        <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
+
+                        @if (order.PaymentPending == false)
+                        {
+                            <td>Offen</td>
+                        }
+                        else
+                        {
+                            <td>Abgeschlossen</td>
+
+                        }
+                        <td>
+                            @*the total price will be calculated*@
+                            @{
+                                decimal totalPrice = order.OrderProducts
+                                .Sum(op => op.Quantity * op.Products.NetUnitPrice * (1 + op.Products.ProductCategory.TaxRate / 100));
+                            }
+
+                            @totalPrice.ToString("F2") €
+                        </td>
+                        <td>
+                            <a asp-area="" asp-controller="Order" asp-action="OrderDetails" asp-route-orderId="@order.Id" asp-route-guid="@Context.Request.Cookies["guid"]" class="btn btn-sm btn-danger">Details</a>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h3 class="my-4">Adressen</h3>
+
+            @*data on the delivery address are issued*@
+            <h3>Lieferungsaddresse</h3>
+
+            @*// Find the address from the Model based on the IsDeliveryAddress*@
+            @foreach (var address in Model.Addresses.Where(a => a.IsDeliveryAddress == true))
+            {
+                <div>
+                    <p>
+                        @address.FirstName<br>
+                        @address.LastName<br>
+                        @address.AddressLine<br>
+                        @address.Zipcode<br>
+                        @address.City<br>
+                        @address.Country<br>
+                    </p>
+                </div>
+            }
+
+            @*data on the billing address are issued*@
+            <h3>Rechnungsadresse</h3>
+
+            @*// Find the address from the Model based on the IsBillingAddress*@
+            @foreach (var address in Model.Addresses.Where(a => a.IsBillingAddress == true))
+            {
+                <div>
+                    <p>
+                        @address.FirstName<br>
+                        @address.LastName<br>
+                        @address.AddressLine<br>
+                        @address.Zipcode<br>
+                        @address.City<br>
+                        @address.Country<br>
+                </div>
+            }
+
+            <a class="btn btn-danger" id="address-management-button" asp-area="" asp-controller="User" asp-action="AddressManagement" asp-route-guid="@Context.Request.Cookies["guid"]">Addresse verwalten</a>
+        </div>
+        <div class="col-md-6">
+
+            <h3 class="my-4">Passwort</h3>
+
+            @*shows an error message that the old password do not match*@
+            @if (TempData["OldPasswordDoNotMatch"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["OldPasswordDoNotMatch"]
+                </div>
+            }
+
+            @*shows an error message that the 2 passwords do not match*@
+            @if (TempData["PasswordDoNotMatch"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["PasswordDoNotMatch"]
+                </div>
+            }
+
+            @*shows an output if the message was successful*@
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+
+            @*the password change is indicated*@
+            <h4>Passwort ändern</h4>
+            
+            <form method="post" asp-controller="User" asp-action="ChangePassword" asp-route-guid="@Context.Request.Cookies["guid"]">
+                <div class="form-group">
+                    <label for="currentPassword">Aktuelles Passwort</label>
+                    <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Neues Passwort</label>
+                    <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Neues Passwort bestätigen</label>
+                    <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+                </div>
+                <button type="submit" class="btn btn-danger mt-3">
+                    Passwort ändern
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+

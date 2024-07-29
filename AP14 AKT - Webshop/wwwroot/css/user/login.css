@@ -1,0 +1,75 @@
+﻿.containersmall {
+    transform: scale(0.90);
+    padding-top: 10px;
+}
+
+.logo {
+    transform: scale(0.75);
+    border-radius: 10px;
+}
+
+.frame {
+    border: 1px solid grey;
+    border-radius: 10px;
+}
+
+.modify {
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+
+
+.password-field[type=password] ~ .password-button .password-hide-icon,
+.password-field[type=text] ~ .password-button .password-show-icon {
+    display: none;
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-field {
+    width: 100%;
+    padding-right: 0.5em;
+    box-sizing: border-box;
+}
+
+.password-button {
+    position: absolute;
+    right: 0.5em;
+    top: 50%;
+    cursor: pointer;
+}
+
+.password-show-icon {
+    right: 0.5em;
+    color: black;
+}
+
+.password-hide-icon {
+    right: 0.5em;
+    color: black;
+}
+
+
+.formattingbutton {
+    display: flex;
+    justify-content: space-between;
+}
+
+.textdark {
+    color: black;
+    font-weight: bold;
+}
+
+.linkcolorhover a:hover {
+    color: rgb(228, 33, 55);
+    text-decoration: underline;
+}
+
+.checkbox1 {
+    font-weight: bold;
+}

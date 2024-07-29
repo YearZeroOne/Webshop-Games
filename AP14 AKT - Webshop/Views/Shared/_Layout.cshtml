@@ -1,0 +1,399 @@
+﻿@using WebShopLib.Models;
+@using WebShopLib.Services;
+@inject WebShopLib.Models.ApplicationDbContext _context
+@using Microsoft.EntityFrameworkCore;
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - AP14_AKT___Webshop</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/AP14_AKT___Webshop.styles.css" asp-append-version="true" />
+
+	<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+
+
+
+	<style>
+
+		/*	Stackoverflow Gridsystem Reference
+											https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap
+											https://www.codeply.com/go/O1bv4op7Fh
+
+				  */
+
+
+.loginBtn {
+ 
+  cursor: pointer;
+}
+
+.loginBtn:hover {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  perspective: 1000px;
+}
+
+@@keyframes shake {
+  10%, 90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%, 80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%, 50%, 70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%, 60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+		.loginBtn:hover {
+			text-decoration: none;
+			background: white;
+		}
+
+		.navbar-nav > li {
+			padding-top: 20px;
+		}
+
+
+		a {
+			color: #2b2b2b;
+			text-decoration: none;
+		}
+
+			a:hover {
+				color: #2b2b2b;
+				text-decoration: none;
+				cursor: pointer;
+			}
+
+		.navbar-nav .nav-link {
+			position: relative;
+			padding: .5rem 1rem;
+			font-weight: 600;
+		}
+
+
+			.navbar-nav .nav-link::after {
+				content: "";
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				height: 2px;
+				background-color: #dc3545;
+				transform: scaleX(0);
+				transition: all 0.3s ease-in-out;
+			}
+
+			.navbar-nav .nav-link:hover::after {
+				transform: scaleX(1);
+			}
+
+
+		.cart {
+			position: relative;
+			display: inline-block;
+		}
+
+		.material-icons {
+			position: relative;
+			top: 4px;
+			font-size: 24px;
+			color: white;
+		}
+
+		.count {
+			position: absolute;
+			top: -5px;
+			right: -8px;
+			font-size: 11px;
+			border-radius: 50%;
+			background: #d60b28;
+			width: 16px;
+			height: 16px;
+			line-height: 16px;
+			text-align: center;
+			color: white;
+			font-family: 'Roboto', sans-serif;
+			font-weight: bold;
+		}
+
+	</style>
+
+</head>
+
+
+
+
+@{
+
+    string guid = Context.Request.Cookies["guid"];
+    var user = _context.Customers.Where(x => x.Guid == guid).FirstOrDefault();
+    var lastname = _context.Customers.Where(x => x.Guid == guid).Select(x => x.LastName).FirstOrDefault();
+
+
+    var customer = _context.Customers.Include(c => c.ShoppingCart)
+        .FirstOrDefault(c => c.Guid == guid);
+
+
+
+    int itemCount = 0;
+
+    if (customer != null && customer.ShoppingCart != null)
+    {
+
+        itemCount = _context.CartItems
+            .Where(ci => ci.ShoppingCart.CustomerId == customer.Id)
+            .Sum(ci => ci.Quantity);
+        // itemCount now contains the total number of items in the customer's shopping cart
+    }
+}
+
+
+<body>
+	<header class="sticky-top">
+		<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white shadow-sm ">
+
+			<div class="container-fluid">
+
+
+				@if (CookieManager.IsLoginCookieSet(Context))
+				{
+					<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index" style="padding-top: 10px;">
+						<img src="~/images/logo.png" class="d-block w-100" alt="...">
+					</a>
+				}
+				else
+				{
+					<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="PublicIndex" style="padding-top: 10px;">
+						<img src="~/images/logo.png" class="d-block w-100" alt="...">
+					</a>
+				}
+				
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+						aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+					<ul class="navbar-nav flex-grow-1">
+
+						@if (CookieManager.IsLoginCookieSet(Context))
+						{
+							<li class="nav-item">
+								<a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index" asp-route-guid="@Context.Request.Cookies["guid"]">Produkte</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Imprint">Kontakt</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="AccountManagement" asp-route-guid="@Context.Request.Cookies["guid"]">Kontoverwaltung</a>
+							</li>
+						
+
+
+						}
+						else
+						{
+
+							<li class="nav-item">
+								<a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="PublicIndex">Produkte</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Imprint">Kontakt</a>
+							</li>
+						}
+
+
+						<li>
+							<div class="input-group mb-3" style="padding-left: 10px;">
+								<form class="d-flex" asp-controller="Product" asp-action="Search">
+
+									<input type="search" class="form-control" placeholder="Search" name="searchString">
+									<div class="input-group-append">
+										<button class="btn btn-outline-danger" type="submit">
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+												<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+											</svg>
+										</button>
+									</div>
+								</form>
+
+							</div>
+						</li>
+
+					</ul>
+					<ul class="navbar-nav ms-auto " style="padding-bottom: 13px;">
+
+
+
+						@if (CookieManager.IsLoginCookieSet(Context))
+						{
+
+
+
+							<li class="nav-item">
+								<span class="nav-link text-dark" style="font-weight: bold; ">Hallo, @lastname!</span>
+							</li>
+
+
+
+
+
+
+							<li class="nav-item">
+								<a class="nav-link text-dark" asp-area="" asp-controller="ShoppingCart" asp-action="Index" asp-route-guid="@Context.Request.Cookies["guid"]">
+									<div class="cart">
+										<span class="count">@itemCount</span>
+										<!--   <span class="count">1</span> -->
+										<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+											<path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+										</svg>
+									</div>
+								</a>
+							</li>
+							<li class="nav-item">
+
+
+								<a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Logout">
+									Logout
+									<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+										<path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+										<path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+									</svg>
+								</a>
+
+							</li>
+
+
+						}
+						else
+						{
+							<li class="nav-item px-3">
+								<a class="nav-link text-dark btn btn-outline-dark shadow-sm mr-3 loginBtn" style="padding-left: 30px; padding-right: 30px;
+ " asp-area="" asp-controller="User" asp-action="Login">
+
+
+
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" style="margin-bottom:3px;
+" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+										<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+										<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+
+									</svg> Anmelden
+								</a>
+							</li>
+							<li class="nav-item px-3">
+
+
+
+
+								<a class="nav-link text-white btn btn-danger shadow-sm " style="padding-left: 30px; padding-right: 30px;
+" asp-area="" asp-controller="User" asp-action="Registry">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" style="margin-bottom:3px;
+" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+										<path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+										<path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+									</svg> Registrieren
+								</a>
+							</li>
+
+						}
+
+
+
+
+					</ul>
+				</div>
+			</div>
+		</nav>
+	</header>
+
+
+	<div>
+		<main role="main" class="pb-3">
+
+			@RenderBody()
+
+			@Html.Raw(System.IO.File.ReadAllText("wwwroot/html/backToTop.cshtml"))
+
+			<script src="~/js/general/backToTop.js"></script>
+			<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+			<script>
+				AOS.init();
+			</script>
+
+
+
+		</main>
+	</div>
+
+	<footer class="border-top footer text-muted">
+		<div class="container p-4">
+			<!--Grid row-->
+			<div class="row">
+				<!--Grid column-->
+				<div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+					<img src="~/images/logo.png" alt="...">
+
+				</div>
+				<!--Grid column-->
+				<!--Grid column-->
+				<div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+					<h5 class="text-uppercase">Über GameHub</h5>
+
+					<ul class="list-unstyled mb-0">
+						<li>
+							<a href="~/Home/Imprint">Impressum</a>
+						</li>
+
+
+					</ul>
+				</div>
+				<!--Grid column-->
+				<!--Grid column-->
+				<div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+					<h5 class="text-uppercase mb-0">Sonstiges</h5>
+
+					<ul class="list-unstyled">
+						<li>
+							<a href="~/Home/TermsAndCondition">AGB</a>
+						</li>
+						<li>
+							<a href="~/Home/PrivacyNotice">Datenschutz</a>
+						</li>
+						<li>
+							<a href="~/Home/CookiesNotice">Hinweise zu Cookies</a>
+						</li>
+
+					</ul>
+				</div>
+				<!--Grid column-->
+			</div>
+			<!--Grid row-->
+		</div>
+		<!-- Grid container -->
+		<!-- Copyright -->
+		<div class="text-center p-3">
+			© 2023 Copyright:
+			<a class="text-black">GameHub</a>
+		</div>
+		<!-- Copyright -->
+	</footer>
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,22 @@
+﻿@inject WebShopLib.Models.ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "AddProductQuantity";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var userId = _context.Employees.Where(x => x.Guid == Context.Request.Cookies["guid"].ToString()).FirstOrDefault().Id;
+}
+
+<h1>Please enter the quantity</h1>
+
+<form asp-action="NewReOrderWithProdProc">
+    <div class="col-md-6">
+        <div class="from-group">
+            <label for="number">Quantity: </label>
+            <input type="number" name="quantity" class="form-control" />
+            <input value="@userId" name="userId" hidden />
+            <input value="@ViewBag.ProductId" name="productId" hidden />
+            <input type="submit" class="btn btn-danger" value="Submit" style="margin-top : 20px;" />
+        </div>
+    </div>
+</form>

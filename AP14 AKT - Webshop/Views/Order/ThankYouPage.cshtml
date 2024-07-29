@@ -1,0 +1,190 @@
+﻿@using WebShopLib.Models;
+@model WebShopLib.Models.Order
+
+<br />
+
+
+@* Create a container for the order confirmation *@
+<div class="container">
+    @* Display a thank you message and an option to download the confirmation as a PDF *@
+    <h1>Vielen Dank für Ihre Bestellung!</h1>
+    <a href="#" class="btn btn-danger" onclick="downloadPDF()">Als PDF downloaden</a>
+
+    @* Display the order number and information about digital products and invoices *@
+    <h3>Bestellnummer: @Model.OrderNumber</h3>
+    <h5>Ihre digitalen Produkte und die Rechnung werden an die Email geschickt.</h5>
+    <h5>Alle Rechnungen sind in ihrem Kundenprofil aufrufbar.</h5>
+
+    @* Display a table with the order details, including the product name, unit price, quantity, and total price *@
+    @*<h2>Rechnung:</h2>*@
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Produktname</th>
+                <th>Preis pro Einheit</th>
+                <th>Menge</th>
+
+                <th>Preis</th>
+
+                <!-- Add additional table headers if needed -->
+            </tr>
+        </thead>
+        @{
+            @* Initialize a variable to hold the total price *@
+            decimal totalPrice = 0; // Variable to store the total price
+        }
+        <tbody>
+            @foreach (var orderProduct in Model.OrderProducts)
+            {
+                @* For each product in the order, display a row with the product's name, unit price, quantity, and total price. *@
+                <tr>
+                    <td>@orderProduct.Products.Name</td>
+                    <td>@((orderProduct.Price * (1 + orderProduct.Products.ProductCategory.TaxRate / 100)).ToString("0.00"))</td>
+                    <td>@orderProduct.Quantity</td>
+                    <td>@((orderProduct.Price * (1 + orderProduct.Products.ProductCategory.TaxRate / 100) * orderProduct.Quantity).ToString("0.00"))</td>
+                    <!-- Display other relevant information from the order product or associated product -->
+                </tr>
+                @* Calculate the total price, taking into account whether the product is physical or digital *@
+                if (orderProduct.Products.ProductCategory.Name == "Physical")
+                {
+                    totalPrice += orderProduct.Price * (1 + orderProduct.Products.ProductCategory.TaxRate / 100) * orderProduct.Quantity;
+                }
+                else
+                {
+                    totalPrice += orderProduct.Price * (1 + orderProduct.Products.ProductCategory.TaxRate / 100) * orderProduct.Quantity;
+                }
+            }
+        </tbody>
+    </table>
+
+    @* Display the total price without shipping costs, the shipping costs, and a link to return to the product selection *@
+    <h5>Gesamtpreis ohne Versandkosten:</h5>
+    <h1>@totalPrice.ToString("0.00") €</h1>
+    <p>Versandkosten: + @ViewBag.ShippingCost €</p>
+
+    <br />
+
+    @* Initialize a table to display the order details such as date, payment status, payment method, and delivery method *@
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Zahlstatus</th>
+                <th>Zahlungsart</th>
+                <th>Lieferart</th>
+                <!-- Add additional table headers if needed -->
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                @* Convert the order date to the desired format *@
+                <td>@Model.OrderDate.ToString("dd.MM.yyyy")</td>
+
+                @* Display payment status based on the PaymentPending flag *@
+                @if (Model.PaymentPending == false)
+                {
+
+                    <td>Offen</td>
+                }
+                else
+                {
+                        <td>Abgeschlossen</td>
+                }
+
+                @* Display payment method based on the PaymentMethodId *@
+                @if (Model.PaymentMethodId == 1)
+                {
+                    <td>Kreditkarte</td>
+
+                }
+                else if (Model.PaymentMethodId == 2)
+                {
+                    <td>Überweisung</td>
+                }
+                else
+                {
+                    <td>Bargeld</td>
+                }
+
+
+                @* Display delivery method based on the PickUp flag *@
+                @if (@Model.PickUp == false)
+                {
+                    <td>Versand</td>
+                }
+
+                else
+                {
+                    <td>Abholung</td>
+                }
+
+        </tbody>
+
+    </table>
+    @* Provide a button linking back to the product selection page *@
+    <a href="/Product/Index" class="btn btn-danger">Zur Produktauswahl</a>
+
+    @* If the order is for pick up, display the pick-up address *@
+    @if (Model.PickUp == true)
+    {
+        <br />
+        <br />
+        <h5>
+            Anschrift für Abholung:
+        </h5>
+        <div>GameHub GmbH </div>
+        <div>Musterstraße 123</div>
+                <div>
+                    12345 Musterstadt
+                </div>
+     }
+
+    @* If the payment method was bank transfer, display the banking information *@
+        @if (Model.PaymentMethodId == 2)
+        {
+            <br />
+            <br />
+            <h5>
+                Überweisungsdaten:
+            </h5>
+            <div>GameHub GmbH </div>
+            <div>IBAN: AT1241251289512958</div>
+       
+        }
+        <br />
+
+</div>
+@* Import the html2pdf.js library, which allows HTML content to be converted into a PDF *@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.js"></script>
+<script>
+    function downloadPDF() {
+        const element = document.querySelector('.container');
+
+        // Create a deep clone of the element to exclude the button
+        let clonedElement = element.cloneNode(true);
+
+        // Remove all the buttons from the cloned element
+        const buttons = clonedElement.querySelectorAll('.btn-danger');
+        buttons.forEach(button => {
+            button.parentNode.removeChild(button);
+        });
+
+        const opt = {
+            margin: 0,
+            filename: 'order.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Use the clonedElement for the PDF
+        html2pdf().from(clonedElement).set(opt).save();
+    }
+</script>
+
+
+
+
+
+
+

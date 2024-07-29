@@ -1,0 +1,116 @@
+﻿@model WebShopLib.Models.TempEmployee
+@inject WebShopLib.Models.ApplicationDbContext _context
+@{
+	ViewData["Title"] = "NewEmployee";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	string guid = Context.Request.Cookies["guid"];
+	var user = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+
+}
+
+<h1>NewEmployee</h1>
+
+<h2 class="alert-danger">@TempData["UsernameTaken"]?.ToString()</h2>
+
+<hr />
+<div class="row" id="myForm">
+	<div class="col-md-4">
+		<form asp-action="NewEmployeeProc">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div class="form-group" hidden>
+				<label asp-for="Guid" class="control-label"></label>
+				<input asp-for="Guid" class="form-control" />
+				<span asp-validation-for="Guid" class="text-danger"></span>
+			</div>
+			<div class="form-group" hidden>
+				<label asp-for="TimeCreated" class="control-label"></label>
+				<input asp-for="TimeCreated" class="form-control" />
+				<span asp-validation-for="TimeCreated" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="FirstName" class="control-label"></label>
+				<input asp-for="FirstName" class="form-control" />
+				<span asp-validation-for="FirstName" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="LastName" class="control-label"></label>
+				<input asp-for="LastName" class="form-control" />
+
+				<span asp-validation-for="LastName" class="text-danger"></span>
+			</div>
+
+			<label asp-for="UserName" class="control-label"></label>
+			<div class="form-group">
+				<div class="input-group">
+
+					<span class="input-group-addon" id="basic-addon1">@@</span>
+					<input asp-for="UserName" class="form-control" aria-describedby="basic-addon1" id="username" />
+
+				</div>
+				<span asp-validation-for="UserName" class="text-danger"></span>
+			</div>
+
+			<label asp-for="BusinessEmail" class="control-label"></label>
+			<div class="form-group">
+				<div class="input-group">
+					<input asp-for="BusinessEmail" class="form-control" aria-describedby="basic-addon2" id="bussinesMail" />
+					<span class="input-group-addon" id="basic-addon2">@@gamehub.com</span>
+
+				</div>
+				<span asp-validation-for="BusinessEmail" class="text-danger"></span>
+			</div>
+
+
+
+
+			<div class="form-group">
+				<label asp-for="PrivateEmail" class="control-label"></label>
+				<input asp-for="PrivateEmail" class="form-control" />
+				<span asp-validation-for="PrivateEmail" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="PrivatePhone" class="control-label"></label>
+				<input asp-for="PrivatePhone" class="form-control" />
+				<span asp-validation-for="PrivatePhone" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Role" class="control-label"></label>
+				<select name="Role" class="form-control">
+					@if (user.Role == 1)
+					{
+						<option value="1">Admin</option>
+						<option value="2">Manager</option>
+
+					}
+					<option value="3">Employee</option>
+				</select>
+				<span asp-validation-for="Role" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<input type="submit" value="Create" class="btn btn-primary" id="create" />
+			</div>
+		</form>
+	</div>
+	<div id="result"></div>
+</div>
+
+<div>
+	<a href="/Home/Hub">Back to List</a>
+</div>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
+
+<script>
+	const username = document.getElementById("username");
+	const bussinesMail = document.getElementById("bussinesMail");
+
+	username.addEventListener("input", () => {
+		bussinesMail.value = username.value;
+	});
+</script>
+
+

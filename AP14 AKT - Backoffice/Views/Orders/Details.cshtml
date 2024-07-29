@@ -1,0 +1,293 @@
+﻿@model WebShopLib.Models.Order
+@inject WebShopLib.Models.ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var products = from op in _context.OrderProducts
+                   join prod in _context.Products on op.ProductsId equals prod.Id
+                   where op.OrderId == Model.Id && prod.IsActive
+                   select new
+                   {
+                       Name = prod.Name,
+                       Number = prod.ProductNumber,
+                       Dev = prod.Developer.Name,
+                       UnitPrice = prod.NetUnitPrice,
+                       Stock = prod.Stock,
+                       Quantity = op.Quantity,
+                       FullPrice = op.Quantity * prod.NetUnitPrice
+                   };
+
+    string orderStatus = "";
+
+    if (Model.Cancelled)
+    {
+        orderStatus = "Cancelled";
+    }
+    else if (!Model.PaymentPending)
+    {
+        orderStatus = "Completed";
+    }
+    else if (Model.PaymentPending)
+    {
+        orderStatus = "Open";
+    }
+    var billingAddress = _context.Addresses.Where(x => x.IsBillingAddress && x.CustomerId == Model.CustomerId).FirstOrDefault();
+    if (billingAddress == null)
+    {
+        billingAddress = _context.Addresses.Where(x =>x.CustomerId == Model.CustomerId).FirstOrDefault();
+    }
+    var deliveryAddress = _context.Addresses.Where(x => (bool)x.IsDeliveryAddress && x.CustomerId == Model.CustomerId).FirstOrDefault();
+    if (deliveryAddress == null)
+    {
+        deliveryAddress = _context.Addresses.Where(x => x.CustomerId == Model.CustomerId).FirstOrDefault();
+    }
+
+    var price = from op in _context.OrderProducts
+                join prod in _context.Products on op.ProductsId equals prod.Id
+                join pc in _context.ProductCategories on prod.ProductCategoryId equals pc.Id
+                where op.OrderId == Model.Id
+                select new
+                {
+                    NetPrice = prod.NetUnitPrice * op.Quantity,
+                    GrossPrice = (prod.NetUnitPrice * op.Quantity) * (1 + (pc.TaxRate / 100))
+                };
+
+    var netPrice = price.Sum(x => x.NetPrice);
+    var grossPrice = price.Sum(x => x.GrossPrice);
+
+    string guid = Context.Request.Cookies["guid"];
+    var currentUser = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+
+}
+
+<h1>Details</h1>
+
+
+<div>
+    <h4>Order</h4><div>
+        @{
+            string selected = "";
+
+            if (Model.Cancelled)
+            {
+                selected = "Cancelled";
+            }
+            else if (Model.PaymentPending)
+            {
+                selected = "Pending";
+            }
+            else
+            {
+                selected = "Paid";
+            }
+
+            <div class="dropdown">
+                <button class="btn btn-danger dropdown-toggle" type="button" id="ddMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width:100px;">
+                    @Html.Raw(selected)
+                </button>
+                <div class="dropdown-menu" aria-labelledby="ddMenu">
+                    <a class="dropdown-item" href="/Orders/ChangeStatus?userId=@currentUser.Id&itemId=@Model.Id&status=1">@(Model.Cancelled ? "Reinstate" : "Cancel")</a>
+                    @if (Model.PaymentPending)
+                    {
+                        <a class="dropdown-item" href="/Orders/ChangeStatus?userId=@currentUser.Id&itemId=@Model.Id&status=2">Paid</a>
+                    }
+                    else
+                    {
+                        <a class="dropdown-item" href="/Orders/ChangeStatus?userId=@currentUser.Id&itemId=@Model.Id&status=3">Pending</a>
+                    }
+                </div>
+            </div>
+
+        }
+    </div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.OrderDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DeliveryDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DeliveryDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.OrderNumber)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.OrderNumber)
+        </dd>
+        <dt class="col-sm-2">
+            Payment
+        </dt>
+        <dd class="col-sm-10">
+            @(Model.PaymentPending ? Html.Raw("Pending") : Html.Raw("Paid"))
+        </dd>
+        <dt class="col-sm-2">
+            Status
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(orderStatus)
+        </dd>
+
+        @if (!Model.PaymentPending)
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.PaymentMethod)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.PaymentMethod.Name)
+            </dd>
+        }
+
+        <dt class="col-sm-2">
+            Billing Address
+        </dt>
+        <dd class="col-sm-10">
+            @billingAddress.AddressLine @billingAddress.Zipcode @billingAddress.City @billingAddress.Country
+        </dd>
+
+        <dt class="col-sm-2">
+            Delivery Address
+        </dt>
+        <dd class="col-sm-10">
+            @deliveryAddress.AddressLine @deliveryAddress.Zipcode @deliveryAddress.City @deliveryAddress.Country
+        </dd>
+
+        <dt class="col-sm-2">
+            Pick Up
+        </dt>
+        <dd class="col-sm-10">
+            @{
+                if (Model.PickUp != null)
+                {
+                    if ((bool)Model.PickUp)
+                    {
+                        @Html.Raw("Yes")
+                    }
+                    else
+                    {
+                        @Html.Raw("No")
+                    }
+                }
+                else
+                {
+                    @Html.Raw("No")
+                }
+            }
+        </dd>
+
+        <dt class="col-sm-2">
+            Net Price
+        </dt>
+        <dd class="col-sm-10">
+            @Math.Round(netPrice,2)
+        </dd>
+
+        <dt class="col-sm-2">
+            Gross Price
+        </dt>
+        <dd class="col-sm-10">
+            @Math.Round(grossPrice,2)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Customer)
+        </dt>
+        <dd class="col-sm-10">
+            <table>
+                <tr>
+                    <th>
+                        Number:
+                    </th>
+                    <td>
+                        @Model.Customer.CustomerNumber
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Name:
+                    </th>
+                    <td>
+                        @Model.Customer.FirstName @Model.Customer.LastName
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Address:
+                    </th>
+                    <td>
+                        @billingAddress.AddressLine   @billingAddress.Zipcode @billingAddress.City @billingAddress.Country
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Email:
+                    </th>
+                    <td>
+                        @Model.Customer.Email
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Phone Nr:
+                    </th>
+                    <td>
+                        @Model.Customer.Phone
+                    </td>
+                </tr>
+            </table>
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="ShowReceipt" asp-route-id="@Model?.Id">Show Receipt</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
+
+<div>
+    <h4>Products</h4>
+    <table class="table">
+        <tr>
+            <th>Name</th>
+            <th>Product Number</th>
+            <th>Developer</th>
+            <th>Stock</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Full Price</th>
+        </tr>
+        @foreach (var item in products)
+        {
+            <tr>
+                <td>
+                    @item.Name
+                </td>
+                <td>
+                    @item.Number
+                </td>
+                <td>
+                    @item.Dev
+                </td>
+                <td>
+                    @item.Stock
+                </td>
+                <td>
+                    @item.UnitPrice
+                </td>
+                <td>
+                    @item.Quantity
+                </td>
+                <td>
+                    @Math.Round(item.FullPrice, 2)
+                </td>
+            </tr>
+        }
+    </table>
+</div>

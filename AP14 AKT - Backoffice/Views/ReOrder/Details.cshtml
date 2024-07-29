@@ -1,0 +1,229 @@
+﻿@model WebShopLib.Models.ReOrder
+@inject WebShopLib.Models.ApplicationDbContext _context
+@using Microsoft.EntityFrameworkCore
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    //var deliveries = _context.Deliveries.Where(x => x.ReOrderId == Model.Id).ToList();
+
+    var notDeliveredProducts =
+    (
+        from deli in _context.Deliveries
+        join products in _context.Products on deli.ProductId equals products.Id
+        where deli.ReOrderId == Model.Id && !deli.Completed
+        select new
+        {
+            Id = products.Id,
+            Name = products.Name,
+            Number = deli.DeliveryNumber,
+            Quantity = deli.Quantity,
+            Price = products.NetUnitPrice * deli.Quantity
+        }
+    ).ToList();
+
+    var deliveredProducts =
+    (
+        from deli in _context.Deliveries
+        join products in _context.Products on deli.ProductId equals products.Id
+        where deli.ReOrderId == Model.Id && Model.Status == WebShopLib.Models.ReOrderStatus.PartiallyFulfilled|| deli.ReOrderId == Model.Id && Model.Status == WebShopLib.Models.ReOrderStatus.Complete
+        select new
+        {
+            Id = products.Id,
+            Name = products.Name,
+            Number = deli.DeliveryNumber,
+            Quantity = deli.Quantity,
+            Date = deli.DeliveryDate,
+            EmployeeFirstName = deli.Reciever.FirstName,
+            EmployeeLastName = deli.Reciever.LastName,
+            Price = products.NetUnitPrice * deli.Quantity
+        }
+    ).ToList();
+
+    var filteredDelivProd = deliveredProducts.Where(p => p.Date != null);
+
+    var orderedQuantity = _context.Deliveries.Include(x => x.ReOrder).Where(x => x.ReOrder.Id == Model.Id).ToList();
+
+    string guid = Context.Request.Cookies["guid"];
+    var currentUser = _context.Employees.Where(x => x.Guid == guid).FirstOrDefault();
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>ReOrder</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.OrderDate.ToShortDateString())
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.Status)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ReOrderNumber)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ReOrderNumber)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Sent)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Sent)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.LastStatusChange)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.Raw(Model.LastStatusChange.ToShortDateString())
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Creator)
+        </dt>
+        <dd class="col-sm-10">
+            @_context.Employees.Where(x=>x.Id == Model.CreatorId).FirstOrDefault()?.UserName
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.LastEditor)
+        </dt>
+        <dd class="col-sm-10">
+            @_context.Employees.Where(x=>x.Id == Model.LastEditorId).FirstOrDefault()?.UserName
+        </dd>
+        <dt class="col-sm-2">
+            Ordered Quantity
+        </dt>
+        <dd class="col-sm-10">
+            @orderedQuantity.Sum(x=>x.Quantity)
+        </dd>
+        <dt class="col-sm-2">
+            Arrived Quantity
+        </dt>
+        <dd class="col-sm-10">
+            @orderedQuantity.Where(x=>x.Completed).Sum(x=>x.Quantity)
+        </dd>
+        <dt class="col-sm-2">
+            Gesamtwert
+        </dt>
+        <dd class="col-sm-10">
+            @{
+                //var gesamtpreis = _context.Deliveries.Join(_context.Products,
+                //    d => d.ProductId,
+                //    p => p.Id,
+                //    (d, p) => new { Gesamtwert = d.Quantity * p.NetUnitPrice });
+
+                var totalPrice =
+                (
+                from del in _context.Deliveries
+                join p in _context.Products on del.ProductId equals p.Id
+                join pcat in _context.ProductCategories on p.ProductCategoryId equals pcat.Id
+                where del.ReOrderId == Model.Id
+                select new
+                {
+                    TotalPrice = del.Quantity * p.NetUnitPrice * (1 + pcat.TaxRate / 100)
+                }.TotalPrice
+                );
+
+                if (totalPrice != null)
+                {
+                    @Html.Raw(Math.Round((decimal)totalPrice.Sum(), 2))
+
+                    <span> €</span>
+                }
+
+            }
+        </dd>
+    </dl>
+    @*<table class="table table-hover">
+    <tr>
+    <th>Id</th>
+    <th>Product</th>
+    <th>ReOrderId</th>
+    <th>Quantity</th>
+    <th>Completed</th>
+    </tr>
+    @foreach (var item in deliveries)
+    {
+    <tr>
+    <td>@item.Id</td>
+    <td>@_context.Products.Find(item.ProductId)?.Name</td>
+    <td>@item.ReOrderId</td>
+    <td>@item.Quantity</td>
+    <td>@(item.Completed ? "Completed" : "Incomplete")</td>
+    </tr>
+    }
+    </table>*@
+
+</div>
+
+<h4>Ordered</h4>
+<div class="row">
+    <table class="table table-hover">
+        <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        @{
+            foreach (var item in notDeliveredProducts)
+            {
+                <tr>
+                    <td hidden>@item.Id</td>
+                    <td>@item.Number</td>
+                    <td>@item.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@Math.Round(item.Price, 2)<span> €</span></td>
+                </tr>
+            }
+        }
+    </table>
+</div>
+
+<h4>Delivered</h4>
+<div class="row">
+    <table class="table table-hover">
+        <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Employee</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        @{
+            foreach (var item in filteredDelivProd)
+            {
+                <tr>
+                    <td hidden>@item.Id</td>
+                    <td>@item.Number</td>
+                    <td>@item.Name</td>
+                    <td>@item.Date</td>
+                    <td>@item.EmployeeFirstName @item.EmployeeLastName</td>
+                    <td>@item.Quantity</td>
+                    <td>@Math.Round(item.Price, 2)<span> €</span></td>
+                </tr>
+            }
+        }
+    </table>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    @if (Model.Status == WebShopLib.Models.ReOrderStatus.Created)
+    {
+        <a asp-action="AddDelivery" asp-route-id="@Model?.Id" asp-route-userid="@currentUser.Id">Add Delivery |</a>
+    }
+    @if (Model.Status == WebShopLib.Models.ReOrderStatus.Created && Model.Deliveries.Count != 0)
+    {
+        <a asp-action="ReOrderSurrender" asp-route-id="@Model?.Id" asp-route-userid="@currentUser.Id">Send |</a>
+    }
+    <a asp-action="Index">Back to List</a>
+</div>
